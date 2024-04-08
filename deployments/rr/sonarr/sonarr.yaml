@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      name: sonarr
+      labels:
+        app: sonarr
+    spec:
+      # securityContext:
+      #   runAsUser: 1000
+      #   runAsGroup: 1000
+      #   runAsNonRoot: true
+      #   fsGroup: 1000
+      #   sysctls:
+      #     - name: net.ipv4.ip_unprivileged_port_start
+      #       value: "80"
+      volumes:
+        - name: sonarr-config-nfs
+          persistentVolumeClaim:
+            claimName: sonarr-config-nfs
+        - name: rr-media-nfs
+          persistentVolumeClaim:
+            claimName: rr-media-nfs
+      containers:
+        - name: sonarr
+          image: lscr.io/linuxserver/sonarr
+          ports:
+            - containerPort: 8989
+          volumeMounts:
+            - name: rr-media-nfs
+              mountPath: /data/series
+              subPath: "series/"
+            - name: rr-media-nfs
+              mountPath: /data/anime
+              subPath: "anime/"
+            - name: rr-media-nfs
+              mountPath: /data/downloads
+              subPath: "downloads/"
+            - name: rr-media-nfs
+              mountPath: /data/incomplete
+              subPath: "incomplete/"
+            - name: sonarr-config-nfs
+              mountPath: /config
+              subPath: "config/"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr-svc
+  namespace: rr
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.240
+spec:
+  selector:
+    app: sonarr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8989
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarr
+  namespace: rr
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`sonarr.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: sonarr-svc
+          namespace: rr
+          port: 80
+  tls: {}

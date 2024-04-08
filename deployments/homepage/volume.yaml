@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: homepage-nfs
+  namespace: homepage
+spec:
+  capacity:
+    storage: 1070Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  nfs:
+    server: 192.168.31.99
+    path: "/mnt/ssd120/apps/homepage"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homepage-nfs
+  namespace: homepage
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      # minimum capacity
+      storage: 100Mi

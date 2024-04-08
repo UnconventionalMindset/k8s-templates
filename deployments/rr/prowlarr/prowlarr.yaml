@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      name: prowlarr
+      labels:
+        app: prowlarr
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: prowlarr-config-nfs
+          persistentVolumeClaim:
+            claimName: prowlarr-config-nfs
+        - name: rr-media-nfs
+          persistentVolumeClaim:
+            claimName: rr-media-nfs
+      containers:
+        - name: prowlarr
+          image: lscr.io/linuxserver/prowlarr
+          ports:
+            - containerPort: 9696
+          volumeMounts:
+            - name: rr-media-nfs
+              mountPath: /data/downloads
+              subPath: "downloads/"
+            - name: rr-media-nfs
+              mountPath: /data/incomplete
+              subPath: "incomplete/"
+            - name: prowlarr-config-nfs
+              mountPath: /config
+              subPath: "config/"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr-svc
+  namespace: rr
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.242
+spec:
+  selector:
+    app: prowlarr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9696
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prowlarr
+  namespace: rr
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`prowlarr.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: prowlarr-svc
+          namespace: rr
+          port: 80
+  tls: {}

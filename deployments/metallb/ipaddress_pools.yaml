@@ -1,0 +1,28 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: production
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.31.200-192.168.31.255
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: reserved
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.31.100-192.168.31.100
+  autoAssign: false
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: pool1-advert
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - production
+    - reserved

@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code
+  namespace: code
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: code
+  template:
+    metadata:
+      name: code
+      labels:
+        app: code
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: code-config-nfs
+          persistentVolumeClaim:
+            claimName: code-config-nfs
+      containers:
+        - name: code
+          image: lscr.io/linuxserver/code-server
+          ports:
+            - containerPort: 8443
+              name: web
+              protocol: TCP
+          volumeMounts:
+            - name: code-config-nfs
+              mountPath: /config
+              subPath: "code/config/"
+            - name: code-config-nfs
+              mountPath: /proj
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+            - name: DEFAULT_WORKSPACE
+              value: /proj
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-svc
+  namespace: code
+spec:
+  selector:
+    app: code
+  ports:
+    - name: websecure
+      protocol: TCP
+      port: 80
+      targetPort: 8443
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: code
+  namespace: code
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`code.umhomelab.com`) || Host(`www.code.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: code-svc
+          namespace: code
+          port: 80
+  tls: {}

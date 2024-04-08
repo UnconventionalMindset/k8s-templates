@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-media-nfs
+  namespace: jellyfin
+spec:
+  capacity:
+    storage: 1070Gi
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+    - rsize=8192
+    - wsize=8192
+  storageClassName: nfs
+  nfs:
+    server: 192.168.31.99
+    path: "/mnt/vdev14tb/files"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-media-nfs
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      # minimum capacity
+      storage: 100Mi

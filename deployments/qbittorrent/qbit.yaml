@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbit
+  namespace: qbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbit
+  template:
+    metadata:
+      name: qbit
+      labels:
+        app: qbit
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: qbit-config-nfs
+          persistentVolumeClaim:
+            claimName: qbit-config-nfs
+        - name: media-nfs
+          persistentVolumeClaim:
+            claimName: media-nfs
+      containers:
+        - name: qbit
+          image: lscr.io/linuxserver/qbittorrent
+          ports:
+            - containerPort: 8080
+              name: http-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: https-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: discovery-udp
+              protocol: UDP 
+          volumeMounts:
+            - name: media-nfs
+              mountPath: /mnt/incomplete
+              subPath: "incomplete/"
+            - name: media-nfs
+              mountPath: /downloads
+              subPath: "downloads/"
+            - name: qbit-config-nfs
+              mountPath: /config
+              subPath: "config/"
+            - name: qbit-config-nfs
+              mountPath: /theme
+              subPath: "theme/"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+            - name: WEBUI_PORT
+              value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbit-svc
+  namespace: qbit
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.231
+spec:
+  selector:
+    app: qbit
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+    - name: web-tcp
+      protocol: TCP
+      port: 6881
+      targetPort: 6881
+    - name: webudp
+      protocol: UDP
+      port: 6881
+      targetPort: 6881
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: qbit
+  namespace: qbit
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`qbit.umhomelab.com`) || Host(`www.qbit.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: qbit-svc
+          namespace: qbit
+          port: 80
+  tls: {}

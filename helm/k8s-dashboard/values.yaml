@@ -1,0 +1,25 @@
+nginx:
+  enabled: false
+  
+cert-manager:
+  enabled: false
+  installCRDs: false
+
+metrics-server:
+  enabled: false
+
+fullnameOverride: 'kubernetes-dashboard'
+
+web:
+  containers:
+    ports:
+      - name: web
+        containerPort: 8000
+        protocol: TCP
+
+app:
+  ingress:
+    enabled: false
+    hosts:
+      - k.umhomelab.com
+      - k8s.umhomelab.com

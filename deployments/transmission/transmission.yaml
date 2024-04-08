@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+  namespace: t
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission
+  template:
+    metadata:
+      name: transmission
+      labels:
+        app: transmission
+    spec:
+      containers:
+        - name: transmission
+          image: lscr.io/linuxserver/transmission
+          ports:
+            - containerPort: 9091
+              name: http-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: https-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: discovery-udp
+              protocol: UDP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transmission-svc
+  namespace: t
+spec:
+  selector:
+    app: transmission
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9091
+    - name: web-tcp
+      protocol: TCP
+      port: 6881
+      targetPort: 6881
+    - name: webudp
+      protocol: UDP
+      port: 6881
+      targetPort: 6881
+  type: LoadBalancer
+  loadBalancerIP: 192.168.31.233
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: transmission
+  namespace: t
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`t.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: transmission-svc
+          namespace: t
+          port: 80

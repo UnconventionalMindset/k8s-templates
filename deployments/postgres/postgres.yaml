@@ -1,0 +1,127 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv
+  namespace: db
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: nfs
+  capacity:
+    storage: 1070Gi
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+    - rsize=8192
+    - wsize=8192
+  nfs:
+    server: 192.168.31.99
+    path: "/mnt/ssd120/apps/postgres"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pvc
+  namespace: db
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      # minimum capacity
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: db
+spec:
+  selector:
+   matchLabels:
+    app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroupChangePolicy: "OnRootMismatch"
+      volumes:
+        - name: postgres-config-file
+          configMap:
+            name: postgre-conf
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+      containers:
+        - name: postgres
+          securityContext:
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+            privileged: false
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+            # - mountPath: /var/lib/postgresql/data/postgres.conf
+            #   name: postgres-config-file
+            #   subPath: postgres.conf
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-root-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-root-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-configmap
+                  key: postgres-dbname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: db
+  labels:
+    app: postgres
+spec:
+    ports:
+    - name: postgres
+      port: 5432
+      nodePort: 30432
+    type: NodePort
+    selector:
+      app: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg
+  namespace: db
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.229
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: LoadBalancer

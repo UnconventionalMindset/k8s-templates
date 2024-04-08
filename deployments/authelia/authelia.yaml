@@ -1,0 +1,123 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: auth
+  name: authelia
+  labels:
+    app: authelia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authelia
+  template:
+    metadata:
+      labels:
+        app: authelia
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      volumes:
+        # - name: authelia-conf
+        #   configMap:
+        #     name: authelia-conf
+        - name: authelia-nfs
+          persistentVolumeClaim:
+            claimName: authelia-nfs
+      containers:
+        - name: authelia
+          image: authelia/authelia:4.37.5
+          ports:
+          - containerPort: 9091
+          volumeMounts:
+            - name: authelia-nfs
+              mountPath: /config
+            # - name: authelia-conf
+            #   mountPath: /etc/authelia/configuration.yml
+            
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: auth
+  name: authelia
+  labels:
+    app: authelia
+spec:
+  selector:
+    app: authelia
+  ports:
+    - port: 80
+      targetPort: 9091
+      protocol: TCP
+      name: authelia
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authelia
+  namespace: auth
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`auth.umhomelab.com`)
+      services:
+        - name: authelia 
+          port: 80
+  tls:
+    certResolver: default
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   namespace: auth
+#   name: authelia-conf
+# data:
+#   configuration.yml: |-
+# jwt_secret: example
+# theme: dark
+# log:
+#   level: debug
+# authentication_backend:
+#   file:
+#     path: /config/users.yml
+#     watch: false
+#     search:
+#       email: true
+#   password:
+#     algorithm: argon2
+#     argon2:
+#       variant: argon2id
+#       iterations: 1
+#       memory: 64
+#       parallelism: 8
+#       salt_length: 16
+# session:
+#   secret: changeme
+#   domain: umhomelab.com
+#   remember_me_duration: 48h
+# storage:
+#   local:
+#     path: /etc/authelia/storage
+# authentication_methods:
+#   default_method: one_factor
+# access_control:
+#   default_policy: deny
+#   rules:
+#     - domain: '*.umhomelab.com'
+#       subject: 'group:users'
+#       policy: one_factor
+#     - domain: 'k8s.umhomelab.com'
+#       suject: 'group:admins'
+#       policy: one_factor
+# regulation:
+#   max_retries: 6
+#   find_time: 120
+#   ban_time: 99999999
+# default_redirection_url: https://auth.umhomelab.com

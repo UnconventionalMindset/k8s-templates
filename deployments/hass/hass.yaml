@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hass
+  namespace: hass
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hass
+  template:
+    metadata:
+      name: hass
+      labels:
+        app: hass
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+            {
+               "name" : "lan-network",
+               "namespace": "default",
+               "interface": "eth1"
+            }
+          ]'
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "80"
+      volumes:
+        - name: hass-nfs
+          persistentVolumeClaim:
+            claimName: hass-nfs
+      # imagePullSecrets:
+      #   - name: registry-credential
+      containers:
+        - name: hass
+          image: docker.io/homeassistant/home-assistant:latest
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: hass-nfs
+              mountPath: /config
+              subPath: "config/"
+          env:
+            - name: "PUID"
+              value: "1000"
+            - name: "PGID"
+              value: "1000"
+            - name: TZ
+              value: "Europe/Zurich"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hass
+  namespace: hass
+spec:
+  selector:
+    app: hass
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hass
+  namespace: hass
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "Host(`hass.umhomelab.com`) || Host(`www.hass.umhomelab.com`)"
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: hass
+          namespace: hass
+          port: 80
+  tls: {}

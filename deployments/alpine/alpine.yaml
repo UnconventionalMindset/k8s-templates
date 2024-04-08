@@ -1,0 +1,90 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tests
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: appcfg
+#   namespace: tests
+# data:
+#   named.conf: |
+#     options {
+#       forwarders {
+#         # Cloudflare Malware blocking DNS
+#         1.1.1.2;
+#         1.0.0.2;
+#         # Pihole
+#         #???
+#       };
+#     };
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpine
+  namespace: tests
+spec:
+  selector:
+    matchLabels:
+      app: alpine
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: alpine
+    spec:
+      nodeName: node1
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      #   fsGroup: 1000
+      #   fsGroupChangePolicy: "OnRootMismatch"
+      # volumes:
+      #   - name: config-volume
+      #     configMap:
+      #       name: appcfg
+      # volumes:
+      # - name: test-jfm
+      #   persistentVolumeClaim:
+      #     claimName: test-jfm-nfs
+      # - name: test-jfc
+      #   persistentVolumeClaim:
+      #     claimName: test-jfc-nfs
+      # - name: video
+      #   hostPath:
+      #     path: /dev/vdi
+      # imagePullSecrets:
+      #   - name: regcredalpine
+      containers:
+        - name: test
+          image: docker.io/alpine:latest
+          command:
+            - /bin/sh
+            - "-c"
+            - "sleep 360m"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            privileged: true
+          # volumeMounts:
+            # - mountPath: /films
+            #   name: test-jfm
+            #   subPath: "films/"
+            # - mountPath: /series
+            #   name: test-jfm
+            #   subPath: "series/"
+            # - mountPath: /anime
+            #   name: test-jfm
+            #   subPath: "anime/"
+            # - mountPath: /config
+            #   name: test-jfc
+            #   subPath: "config/"
+            # - mountPath: /dev/vdi
+            #   name: video
+          # volumeMounts:
+          #   - name: config-volume
+          #     mountPath: /etc/bind/named.conf

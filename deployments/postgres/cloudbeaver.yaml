@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudbeaver
+  namespace: db
+spec:
+  selector:
+   matchLabels:
+    app: cloudbeaver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cloudbeaver
+    spec:
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: cloudbeaver-config-nfs
+      containers:
+        - name: cloudbeaver
+          image: dbeaver/cloudbeaver
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /opt/cloudbeaver/workspace
+              subPath: "config/"
+              name: config
+          ports:
+            - containerPort: 8978
+              name: cloudbeaver-web
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudbeaver
+  namespace: db
+  labels:
+    app: cloudbeaver
+spec:
+  selector:
+    app: cloudbeaver
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8978
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: cloudbeaver
+  namespace: db
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "Host(`db.umhomelab.com`) || Host(`www.db.umhomelab.com`)"
+      kind: Rule
+      services:
+        - name: cloudbeaver
+          namespace: db
+          port: 80
+  tls: {}

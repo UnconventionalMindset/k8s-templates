@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyseerr
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyseerr
+  template:
+    metadata:
+      name: jellyseerr
+      labels:
+        app: jellyseerr
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      volumes:
+        - name: jellyseerr-config-nfs
+          persistentVolumeClaim:
+            claimName: jellyseerr-config-nfs
+        - name: rr-media-nfs
+          persistentVolumeClaim:
+            claimName: rr-media-nfs
+      containers:
+        - name: jellyseerr
+          image: ghcr.io/hotio/jellyseerr
+          ports:
+            - containerPort: 5055
+          volumeMounts:
+            - name: jellyseerr-config-nfs
+              mountPath: /config
+              subPath: "config/"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr-svc
+  namespace: rr
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.243
+spec:
+  selector:
+    app: jellyseerr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5055
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jellyseerr
+  namespace: rr
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`jellyseerr.umhomelab.com`) || Host(`www.jellyseerr.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: jellyseerr-svc
+          namespace: rr
+          port: 80
+  tls: {}

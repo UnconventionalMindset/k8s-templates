@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bind9-
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: options
+  namespace: bind9-
+data:
+  named.conf: |
+    options {
+      directory "/var/cache/bind";
+      forwarders {
+        1.1.1.2;
+        1.0.0.2;
+      };
+    };
+    
+    zone "umhomelab.com" IN {
+        type master;
+        file "/etc/bind/umhomelab-com.zone";
+    };
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zone
+  namespace: bind9-
+data:
+  umhomelab-com.zone: |
+    $TTL 2d
+
+    $ORIGIN umhomelab.com.
+
+    @               IN      SOA     ns.umhomelab.com. info.umhomelab.com. (
+                                    2023080500      ; serial
+                                    12h             ; refresh
+                                    15m             ; retry
+                                    3w              ; expire
+                                    2h              ; minimum ttl
+                                    )
+
+                    IN      NS      ns.umhomelab.com.
+
+    ns              IN      A       192.168.31.31
+
+    ; -- add dns records below
+
+    _http._tcp.www.homeserver.com      SRV  10 100  8006 192.168.31.99
+    _http._tcp.www.elitedesk-1.com     SRV  10 100  8006 192.168.31.85
+    _http._tcp.www.elitedesk-2.com     SRV  10 100  8006 192.168.31.86
+    *               IN      A         192.168.31.100
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bind9
+  namespace: bind9-
+spec:
+  selector:
+    matchLabels:
+      app: bind9
+  replicas: 3 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: bind9
+    spec:
+      volumes:
+        - name: options-volume
+          configMap:
+            name: options
+        - name: zone-volume
+          configMap:
+            name: zone
+      imagePullSecrets:
+        - name: regcredbind
+      containers:
+        - name: bind9
+          image: docker.io/ubuntu/bind9:latest
+          ports:
+            - containerPort: 53
+              protocol: TCP
+            - containerPort: 53
+              protocol: UDP
+          volumeMounts:
+            - name: options-volume
+              mountPath: /etc/bind/named.conf
+              subPath: named.conf
+            - name: zone-volume
+              mountPath: /etc/bind/umhomelab-com.zone
+              subPath: umhomelab-com.zone
+          env:
+            # - name: BIND9_USER
+            #   value: "root"
+            - name: TZ
+              value: "Europe/Zurich"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bind9-svc
+  namespace: bind9-
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.31
+spec:
+  selector:
+    app: bind9
+  ports:
+    - name: web-tcp
+      protocol: TCP
+      port: 53
+      targetPort: 53
+    - name: webudp
+      protocol: UDP
+      port: 53
+      targetPort: 53
+  type: LoadBalancer

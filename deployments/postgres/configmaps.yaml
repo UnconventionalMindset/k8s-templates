@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-configmap
+  namespace: db
+  labels:
+    app: postgres
+data:
+  postgres-dbname: postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgre-conf
+  namespace: db
+  labels:
+    app: postgres
+data:
+  postgresql.conf: |-
+    listen_addresses = '*'
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'pg_logs'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'

@@ -1,0 +1,69 @@
+# Install: helm upgrade --install traefik traefik/traefik --values=helm/traefik/traefik-values.yaml
+
+additionalArguments:
+  - "--serversTransport.insecureSkipVerify=true"
+logs:
+# Configure log settings here...
+  general:
+    level: DEBUG
+
+ports:
+# Configure your entrypoints here...
+  web:
+    # (optional) Permanent Redirect to HTTPS
+    redirectTo:
+      port: websecure
+  websecure:
+    tls:
+      enabled: true
+      # (optional) Set a Default CertResolver
+      # certResolver: cloudflare
+  
+# Disable Dashboard
+ingressRoute:
+  dashboard:
+    enabled: false
+
+# Set Traefik as your default Ingress Controller, according to Kubernetes 1.19+ changes.
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+# deployment:
+#   enabled: true
+#   replicas: 3
+#   initContainers:
+#     - name: fix-permissions-acme-json
+#       image: alpine:3.12.4
+#       command:
+#         - chmod
+#         - "600"
+#         - /ssl-certs/acme-staging.json
+#       volumeMounts:
+#         - name: traefik-nfs
+#           mountPath: /ssl-certs
+#   imagePullSecrets: 
+
+podSecurityContext:
+  runAsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    ingressClass: traefik-external
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: false
+
+rbac:
+  enabled: true
+
+service:
+  enabled: true
+  type: LoadBalancer
+  spec:
+    loadBalancerIP: 192.168.31.100

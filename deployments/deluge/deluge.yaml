@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deluge
+  namespace: deluge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deluge
+  template:
+    metadata:
+      name: deluge
+      labels:
+        app: deluge
+    spec:
+      containers:
+        - name: deluge
+          image: ubuntu
+          command:
+            - /bin/sh
+            - "-c"
+            - "sleep 60m"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8112
+              name: http-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: https-tcp
+              protocol: TCP
+            - containerPort: 6881
+              name: discovery-udp
+              protocol: UDP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deluge-svc
+  namespace: deluge
+spec:
+  selector:
+    app: deluge
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8112
+    - name: web-tcp
+      protocol: TCP
+      port: 6881
+      targetPort: 6881
+    - name: webudp
+      protocol: UDP
+      port: 6881
+      targetPort: 6881
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: deluge
+  namespace: deluge
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`deluge.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: deluge-svc
+          namespace: deluge
+          port: 80

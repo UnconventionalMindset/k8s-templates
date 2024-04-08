@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: q
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      volumes:
+        - name: mosquitto-nfs
+          persistentVolumeClaim:
+            claimName: mosquitto-nfs
+      imagePullSecrets:
+        - name: docker-cred
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - containerPort: 1883
+            - containerPort: 9001
+          volumeMounts:
+            - name: mosquitto-nfs
+              mountPath: /mosquitto/config/
+              subPath: "config/"
+            - name: mosquitto-nfs
+              mountPath: /mosquitto/log/
+              subPath: "log/"
+            - name: mosquitto-nfs
+              mountPath: /mosquitto/data/
+              subPath: "data/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-svc
+  namespace: q
+spec:
+  selector:
+    app: mosquitto
+  ports:
+    - protocol: TCP
+      port: 1883
+      targetPort: 1883
+  type: LoadBalancer

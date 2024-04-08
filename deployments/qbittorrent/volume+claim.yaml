@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-nfs
+spec:
+  capacity:
+    storage: 1070Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+    - rsize=8192
+    - wsize=8192
+  nfs:
+    server: 192.168.31.99
+    path: "/mnt/vdev14tb/files"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-nfs
+  namespace: qbit
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      # minimum capacity
+      storage: 100Mi

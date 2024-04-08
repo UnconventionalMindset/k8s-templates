@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: umhomelab-com
+  namespace: default
+spec:
+  secretName: umhomelab-com-staging
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "*.umhomelab.com"
+  dnsNames:
+    - "umhomelab.com"
+    - "*.umhomelab.com"

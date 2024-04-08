@@ -1,0 +1,9 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: authelia
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: http://authelia.auth.svc:80/api/verify?rd=https://auth.umhomelab.com/ssoauth/

@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nextcloud
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      name: nextcloud
+      labels:
+        app: nextcloud
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "80"
+      volumes:
+        - name: nextcloud-nfs
+          persistentVolumeClaim:
+            claimName: nextcloud-nfs
+      containers:
+        - name: nextcloud
+          image: docker.io/nextcloud:apache
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nextcloud-nfs
+              mountPath: /var/www/html
+              subPath: "apps/nextcloud/data/"
+            - name: nextcloud-nfs
+              mountPath: /mnt/apps
+              subPath: "apps/"
+            - name: nextcloud-nfs
+              mountPath: /mnt/storage
+              subPath: "nextcloud-shared/"
+            - name: nextcloud-nfs
+              mountPath: /mnt/media
+              subPath: "files/"
+          env:
+            # - name: APACHE_RUN_USER
+            #   value: "1000"
+            # - name: APACHE_RUN_GROUP
+            #   value: "1000"
+            - name: POSTGRES_DB
+              value: nextcloud
+            - name: POSTGRES_HOST
+              value: postgres.db.svc
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: postgres-password
+            - name: NEXTCLOUD_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: username
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: password
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              value: cloud.umhomelab.com,auth.umhomelab.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-svc
+  namespace: nextcloud
+spec:
+  selector:
+    app: nextcloud
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`cloud.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: nextcloud-svc
+          namespace: nextcloud
+          port: 80
+  tls: {}

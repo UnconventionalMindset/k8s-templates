@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      name: homarr
+      labels:
+        app: homarr
+    spec:
+      securityContext:
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "80"
+      volumes:
+        - name: homarr-config-nfs
+          persistentVolumeClaim:
+            claimName: homarr-config-nfs
+      containers:
+        - name: homarr
+          image: ghcr.io/ajnart/homarr
+          ports:
+            - containerPort: 7575
+          volumeMounts:
+            - name: homarr-config-nfs
+              mountPath: /app/data/configs
+              subPath: "config/"
+            - name: homarr-config-nfs
+              mountPath: /data
+              subPath: "data/"
+            - name: homarr-config-nfs
+              mountPath: /app/public/imgs
+              subPath: "imgs/"
+            - name: homarr-config-nfs
+              mountPath: /app/public/icons
+              subPath: "icons/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homarr-svc
+  namespace: rr
+spec:
+  selector:
+    app: homarr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 7575
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homarr
+  namespace: rr
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`www.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: homarr-svc
+          port: 80
+    - match: Host(`umhomelab.com`)
+      kind: Rule
+      services:
+        - name: homarr-svc
+          port: 80
+  tls: {}

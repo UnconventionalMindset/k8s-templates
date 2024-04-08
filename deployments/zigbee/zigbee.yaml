@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zigbee
+  namespace: zigbee
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zigbee
+  template:
+    metadata:
+      name: zigbee
+      labels:
+        app: zigbee
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "80"
+      nodeName: node1
+      # nodeSelector:
+      #    feature.node.kubernetes.io/usb-ff_10c4_ea60.present: "true"
+      # tolerations:
+      #   - key: "dedicated"
+      #     operator: "Equal"
+      #     value: "zigbee"
+      #     effect: "NoSchedule"
+      volumes:
+        - name: zigbee-nfs
+          persistentVolumeClaim:
+            claimName: zigbee-nfs
+      imagePullSecrets:
+        - name: docker-cred
+      containers:
+        - name: zigbee
+          image: docker.io/koenkk/zigbee2mqtt:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: zigbee-nfs
+              mountPath: /app/data
+              subPath: "config/"
+          env:
+            - name: TZ
+              value: "Europe/Zurich"
+          securityContext:
+            privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
+          # resources:
+          #   limits:
+          #     squat.ai/zigbee: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zigbee-svc
+  namespace: zigbee
+spec:
+  selector:
+    app: zigbee
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: zigbee
+  namespace: zigbee
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`zigbee.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: zigbee-svc
+          namespace: zigbee
+          port: 80
+  tls: {}

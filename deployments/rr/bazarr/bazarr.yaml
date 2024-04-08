@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazarr
+  template:
+    metadata:
+      name: bazarr
+      labels:
+        app: bazarr
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: bazarr-config-nfs
+          persistentVolumeClaim:
+            claimName: bazarr-config-nfs
+        - name: rr-media-nfs
+          persistentVolumeClaim:
+            claimName: rr-media-nfs
+      containers:
+        - name: bazarr
+          image: lscr.io/linuxserver/bazarr
+          ports:
+            - containerPort: 6767
+          volumeMounts:
+            - name: bazarr-config-nfs
+              mountPath: /config
+              subPath: "config/"
+            - name: rr-media-nfs
+              mountPath: /data/series
+              subPath: "series/"
+            - name: rr-media-nfs
+              mountPath: /data/films
+              subPath: "films/"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+            - name: POSTGRES_ENABLED
+              value: "true"
+            - name: POSTGRES_DATABASE
+              value: bazarr
+            - name: POSTGRES_HOST
+              value: 192.168.31.222
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: bazarr-pg14-secret
+                  key: postgres-bazarr-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bazarr-pg14-secret
+                  key: postgres-bazarr-pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr-svc
+  namespace: rr
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.31.245
+spec:
+  selector:
+    app: bazarr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 6767
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bazarr
+  namespace: rr
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`bazarr.umhomelab.com`) || Host(`www.bazarr.umhomelab.com`)
+      kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
+      services:
+        - name: bazarr-svc
+          namespace: rr
+          port: 80
+  tls: {}
