@@ -8,9 +8,14 @@ cert-manager:
 metrics-server:
   enabled: false
 
-fullnameOverride: 'kubernetes-dashboard'
+fullnameOverride: 'dashboard'
 
-web:
+# api:
+#   containers:
+#     args:
+#       - '--disable-csrf-protection=true'
+
+app:
   containers:
     ports:
       - name: web
