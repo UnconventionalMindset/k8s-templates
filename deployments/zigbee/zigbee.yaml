@@ -20,14 +20,7 @@ spec:
         sysctls:
           - name: net.ipv4.ip_unprivileged_port_start
             value: "80"
-      nodeName: node1
-      # nodeSelector:
-      #    feature.node.kubernetes.io/usb-ff_10c4_ea60.present: "true"
-      # tolerations:
-      #   - key: "dedicated"
-      #     operator: "Equal"
-      #     value: "zigbee"
-      #     effect: "NoSchedule"
+      nodeName: node2
       volumes:
         - name: zigbee-nfs
           persistentVolumeClaim:
@@ -37,6 +30,7 @@ spec:
       containers:
         - name: zigbee
           image: docker.io/koenkk/zigbee2mqtt:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           volumeMounts:
@@ -48,9 +42,6 @@ spec:
               value: "Europe/Zurich"
           securityContext:
             privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
-          # resources:
-          #   limits:
-          #     squat.ai/zigbee: 1
 ---
 apiVersion: v1
 kind: Service
@@ -66,6 +57,7 @@ spec:
       port: 80
       targetPort: 80
   type: LoadBalancer
+  loadBalancerIP: 192.168.31.228
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
