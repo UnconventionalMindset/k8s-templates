@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxmox-hs
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 443
+      targetPort: 8006
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: proxmox-hs
+  namespace: default
+subsets:
+  - addresses:
+      - ip: 192.168.31.84
+    ports:
+      - name: http
+        port: 8006
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: proxmox-hs
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`hs.umhomelab.com`) || Host(`www.hs.umhomelab.com`)
+      kind: Rule
+      services:
+      - name: proxmox-hs
+        namespace: default
+        port: 443
+        scheme: https
+        serversTransport: skip-ssl
+  tls: {}
