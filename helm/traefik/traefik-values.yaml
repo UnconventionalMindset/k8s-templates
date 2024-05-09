@@ -42,7 +42,6 @@ ingressClass:
 #       volumeMounts:
 #         - name: traefik-nfs
 #           mountPath: /ssl-certs
-#   imagePullSecrets: 
 
 podSecurityContext:
   runAsGroup: 1000

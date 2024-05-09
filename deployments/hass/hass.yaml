@@ -34,8 +34,6 @@ spec:
         - name: hass-nfs
           persistentVolumeClaim:
             claimName: hass-nfs
-      # imagePullSecrets:
-      #   - name: registry-credential
       containers:
         - name: hass
           image: docker.io/homeassistant/home-assistant:latest

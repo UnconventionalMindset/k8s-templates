@@ -21,8 +21,6 @@ spec:
         - name: mosquitto-nfs
           persistentVolumeClaim:
             claimName: mosquitto-nfs
-      imagePullSecrets:
-        - name: docker-cred
       containers:
         - name: mosquitto
           image: eclipse-mosquitto

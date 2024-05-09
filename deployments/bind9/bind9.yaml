@@ -75,8 +75,6 @@ spec:
         - name: zone-volume
           configMap:
             name: zone
-      imagePullSecrets:
-        - name: regcredbind
       containers:
         - name: bind9
           image: docker.io/ubuntu/bind9:latest

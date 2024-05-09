@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacd
+  namespace: guaca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guacd
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: guacd
+      labels:
+        app: guacd
+        app.kubernetes.io/name: guacd
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+        - name: apache-guacd
+          image: docker.io/guacamole/guacd:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: EXTENSIONS
+              value: auth-openid
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacd
+  namespace: guaca
+spec:
+  selector:
+    app: guacamole
+  ports:
+    - port: 80
+      targetPort: 4822
+  type: LoadBalancer

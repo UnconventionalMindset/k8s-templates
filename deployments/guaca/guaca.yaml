@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacamole
+  namespace: guaca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guacamole
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: guacamole
+      labels:
+        app: guacamole
+        app.kubernetes.io/name: guacamole
+    spec:
+      securityContext:
+        # fsGroup: 1000
+        # runAsGroup: 1000
+        # runAsNonRoot: true
+        # runAsUser: 1000
+        # fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+        - name: apache-guacamole
+          image: docker.io/jwetzell/guacamole:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DB
+              value: guacamole_db
+            - name: POSTGRES_HOST
+              value: "postgres.db.svc"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: guaca-secret
+                  key: guaca-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: guaca-secret
+                  key: guaca-password
+            - name: EXTENSIONS
+              value: auth-openid
+            - name: GUACD_HOSTNAME
+              value: "guacd.guaca.svc"
+            - name: GUACD_PORT
+              value: "80"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+      #     volumeMounts:
+      #       - name: config
+      #         mountPath: /config
+      # volumes:
+      #   - name: config
+      #     persistentVolumeClaim:
+      #       claimName: guaca-config-nfs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacamole
+  namespace: guaca
+spec:
+  selector:
+    app: guacamole
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: guacamole
+  namespace: guaca
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "Host(`guaca.umhomelab.com`) || Host(`www.guaca.umhomelab.com`)"
+      kind: Rule
+      services:
+        - name: guacamole
+          namespace: guaca
+          port: 80
+  tls: {}
