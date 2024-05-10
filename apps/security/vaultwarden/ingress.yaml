@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden
+  namespace: auth
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`password.umhomelab.com`) || Host(`www.password.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: vaultwarden
+          namespace: auth
+          port: 80
+  tls: {}

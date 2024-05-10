@@ -241,3 +241,11 @@ k apply -f secrets/guaca.secret.yaml
 k apply -f apps/admin/guaca/guacd.yaml
 k apply -f apps/admin/guaca/guaca.yaml
 ```
+
+### VaultWarden
+```
+helm repo add gissilabs https://gissilabs.github.io/charts/
+helm repo update
+helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.yaml
+k apply -f apps/security/vaultwarden/ingress.yaml
+```
