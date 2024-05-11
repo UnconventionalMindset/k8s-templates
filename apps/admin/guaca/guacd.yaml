@@ -41,9 +41,9 @@ metadata:
   name: guacd
   namespace: guaca
 spec:
+  type: ClusterIP
   selector:
     app: guacamole
   ports:
     - port: 80
       targetPort: 4822
-  type: LoadBalancer

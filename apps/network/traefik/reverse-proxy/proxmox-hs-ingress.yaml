@@ -35,9 +35,9 @@ spec:
     - match: Host(`hs.umhomelab.com`) || Host(`www.hs.umhomelab.com`)
       kind: Rule
       services:
-      - name: proxmox-hs
-        namespace: default
-        port: 443
-        scheme: https
-        serversTransport: skip-ssl
+        - name: proxmox-hs
+          namespace: default
+          port: 443
+          scheme: https
+          serversTransport: skip-ssl
   tls: {}
