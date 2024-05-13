@@ -94,7 +94,7 @@ k apply -f apps/security/authentik/namespace.yaml
 k apply -f apps/security/authentik/authentik-volume+claim.yaml
 helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
-helm upgrade --install authentik goauthentik/authentik -f secrets/authentik-values.insecure.yaml -n auth --version 2024.2.2
+helm upgrade --install authentik goauthentik/authentik -f secrets/authentik-values.insecure.yaml -n auth --version 2024.4.2
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
 ```
@@ -238,7 +238,6 @@ k apply -f apps/media/immich/ingress.yaml
 ```
 k create ns guaca
 k apply -f secrets/guaca.secret.yaml
-k apply -f apps/admin/guaca/guacd.yaml
 k apply -f apps/admin/guaca/guaca.yaml
 ```
 
