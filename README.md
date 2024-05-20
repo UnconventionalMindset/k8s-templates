@@ -142,7 +142,7 @@ Sometimes multus fails due to: https://github.com/k8snetworkplumbingwg/multus-cn
 Current temporary fix in:
 ```
 k apply -f apps/network/multus/multus-lan.yaml
-k apply -f apps/network/multus/multus-daemonset-thick.yaml
+k apply -f apps/network/multus/multus-daemonset-thick.yml
 ```
 
 ### Home Assistant
