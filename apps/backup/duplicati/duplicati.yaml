@@ -21,9 +21,18 @@ spec:
         runAsUser: 1000
         fsGroupChangePolicy: "OnRootMismatch"
       volumes:
+        - name: duplicati-app
+          persistentVolumeClaim:
+            claimName: duplicati-app-nfs
+        - name: duplicati-apps
+          persistentVolumeClaim:
+            claimName: duplicati-apps-nfs
         - name: duplicati-data
           persistentVolumeClaim:
             claimName: duplicati-data-nfs
+        - name: duplicati-files
+          persistentVolumeClaim:
+            claimName: duplicati-files-nfs
       containers:
         - name: duplicati
           image: docker.io/duplicati/duplicati
@@ -32,8 +41,14 @@ spec:
               name: web
               protocol: TCP
           volumeMounts:
-            - name: duplicati-data
+            - name: duplicati-app
               mountPath: /data
+            - name: duplicati-apps
+              mountPath: /backups/apps
+            - name: duplicati-data
+              mountPath: /backups/data
+            - name: duplicati-files
+              mountPath: /backups/files
           env:
             # - name: PUID
             #   value: "1000"

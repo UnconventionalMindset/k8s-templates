@@ -252,6 +252,10 @@ k apply -f apps/security/vaultwarden/ingress.yaml
 ### Duplicati
 ```
 k create ns backup
+k apply -f apps/backup/duplicati/app-volume.yaml
+
+k apply -f apps/backup/duplicati/apps-volume.yaml
 k apply -f apps/backup/duplicati/data-volume.yaml
+
 k apply -f apps/backup/duplicati/duplicati.yaml
 ```
