@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: duplicati-files-nfs
+  name: kopia-files-nfs
 spec:
   capacity:
     storage: 1070Gi
@@ -20,7 +20,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: duplicati-files-nfs
+  name: kopia-files-nfs
   namespace: backup
 spec:
   accessModes:

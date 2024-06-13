@@ -249,13 +249,14 @@ helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secret
 k apply -f apps/security/vaultwarden/ingress.yaml
 ```
 
-### Duplicati
+### Kopia
 ```
 k create ns backup
-k apply -f apps/backup/duplicati/app-volume.yaml
+k apply -f apps/backup/kopia/app-volume.yaml
 
-k apply -f apps/backup/duplicati/apps-volume.yaml
-k apply -f apps/backup/duplicati/data-volume.yaml
+k apply -f apps/backup/kopia/apps-volume.yaml
+k apply -f apps/backup/kopia/data-volume.yaml
+k apply -f apps/backup/kopia/files-volume.yaml
 
-k apply -f apps/backup/duplicati/duplicati.yaml
+k apply -f apps/backup/kopia/kopia.yaml
 ```

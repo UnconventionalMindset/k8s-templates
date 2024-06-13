@@ -15,6 +15,11 @@ spec:
         app: homarr
     spec:
       securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
         sysctls:
           - name: net.ipv4.ip_unprivileged_port_start
             value: "80"
@@ -25,6 +30,11 @@ spec:
       containers:
         - name: homarr
           image: ghcr.io/ajnart/homarr
+          securityContext:
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            privileged: false
           ports:
             - containerPort: 7575
           volumeMounts:

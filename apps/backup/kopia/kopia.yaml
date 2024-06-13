@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kopia
+  namespace: backup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kopia
+  template:
+    metadata:
+      name: kopia
+      labels:
+        app: kopia
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        supplementalGroups: [999]
+        fsGroupChangePolicy: "OnRootMismatch"
+      volumes:
+        - name: kopia-app
+          persistentVolumeClaim:
+            claimName: kopia-app-nfs
+        - name: kopia-apps
+          persistentVolumeClaim:
+            claimName: kopia-apps-nfs
+        - name: kopia-data
+          persistentVolumeClaim:
+            claimName: kopia-data-nfs
+        - name: kopia-files
+          persistentVolumeClaim:
+            claimName: kopia-files-nfs
+      containers:
+        - name: kopia
+          image: docker.io/kopia/kopia
+          securityContext:
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            supplementalGroups: [999]
+            privileged: false
+          command:
+            - kopia
+            - server
+            - start
+            - --disable-csrf-token-checks
+            - --insecure
+            - --address=0.0.0.0:51515
+            - --server-username=user
+            - --server-password=pass
+          ports:
+            - containerPort: 51515
+              name: web
+              protocol: TCP
+          volumeMounts:
+            - name: kopia-app
+              mountPath: /app/config
+              subPath: "config/"
+            - name: kopia-app
+              mountPath: /app/logs
+              subPath: "logs/"
+            - name: kopia-app
+              mountPath: /app/cache
+              subPath: "cache/"
+            - name: kopia-apps
+              mountPath: /backups/apps
+            - name: kopia-data
+              mountPath: /backups/data
+            - name: kopia-files
+              mountPath: /backups/files
+          env:
+            - name: USER
+              value: "1000"
+            - name: GROUP
+              value: "1000"
+            - name: KOPIA_PASSWORD
+              value: kopiapass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kopia-svc
+  namespace: backup
+spec:
+  selector:
+    app: kopia
+  ports:
+    - name: websecure
+      protocol: TCP
+      port: 80
+      targetPort: 51515
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kopia
+  namespace: backup
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`backup.umhomelab.com`) || Host(`www.backup.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: kopia-svc
+          namespace: backup
+          port: 80
+  tls: {}
