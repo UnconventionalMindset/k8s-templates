@@ -27,6 +27,7 @@ spec:
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
         sysctls:
           - name: net.ipv4.ip_unprivileged_port_start
             value: "80"
@@ -39,7 +40,9 @@ spec:
           image: docker.io/homeassistant/home-assistant:latest
           imagePullPolicy: "IfNotPresent"
           securityContext:
-            privileged: true
+            privileged: false
+            runAsUser: 1000
+            runAsGroup: 1000
           ports:
             - containerPort: 80
           volumeMounts:

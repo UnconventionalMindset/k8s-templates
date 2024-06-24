@@ -223,7 +223,7 @@ helm upgrade --install -n monitoring prometheus prometheus-community/kube-promet
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis.insecure.yaml
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml
 ```
 
 ### Immich
