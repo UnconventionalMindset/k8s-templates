@@ -15,9 +15,9 @@ spec:
         - name: authentik-bearer
           namespace: auth
       services:
-        - name: dashboard-web
+        - name: dashboard-kong-proxy
           namespace: dashboard
-          port: 8000
+          port: 443
     - match: "Host(`k8s.umhomelab.com`) && PathPrefix(`/api`) || Host(`www.k8s.umhomelab.com`) && PathPrefix(`/api`)"
       kind: Rule
       services:
@@ -43,9 +43,9 @@ spec:
     - match: "Host(`k.umhomelab.com`) || Host(`www.k.umhomelab.com`)"
       kind: Rule
       services:
-        - name: dashboard-web
+        - name: dashboard-kong-proxy
           namespace: dashboard
-          port: 8000
+          port: 443
     - match: "Host(`k.umhomelab.com`) && PathPrefix(`/api`) || Host(`www.k.umhomelab.com`) && PathPrefix(`/api`)"
       kind: Rule
       services:

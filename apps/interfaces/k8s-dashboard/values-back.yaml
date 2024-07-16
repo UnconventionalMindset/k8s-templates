@@ -22,13 +22,6 @@ app:
         containerPort: 8000
         protocol: TCP
 
-kong:
-  proxy:
-    type: NodePort
-    annotations:
-      traefik.ingress.kubernetes.io/service.serversscheme: https
-      traefik.ingress.kubernetes.io/service.serverstransport: kubedb-skipverify@kubernetescrd
-
 app:
   ingress:
     enabled: false

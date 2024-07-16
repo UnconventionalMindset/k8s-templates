@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duplicati
+  namespace: backup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: duplicati
+  template:
+    metadata:
+      name: duplicati
+      labels:
+        app: duplicati
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      volumes:
+        - name: duplicati-data
+          persistentVolumeClaim:
+            claimName: duplicati-data-nfs
+      containers:
+        - name: duplicati
+          image: docker.io/duplicati/duplicati
+          ports:
+            - containerPort: 8200
+              name: web
+              protocol: TCP
+          volumeMounts:
+            - name: duplicati-data
+              mountPath: /data
+          env:
+            # - name: PUID
+            #   value: "1000"
+            # - name: PGID
+            #   value: "1000"
+            # - name: TZ
+            #   value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duplicati-svc
+  namespace: backup
+spec:
+  selector:
+    app: duplicati
+  ports:
+    - name: websecure
+      protocol: TCP
+      port: 80
+      targetPort: 8200
+  loadBalancerIP: 192.168.31.218
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: duplicati
+  namespace: backup
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`backup.umhomelab.com`) || Host(`www.backup.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: duplicati-svc
+          namespace: backup
+          port: 80
+  tls: {}

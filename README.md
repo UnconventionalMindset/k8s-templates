@@ -17,7 +17,7 @@ k apply -f apps/admin/ipaddress_pools.yaml
 k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/values.yaml --version v1.14.3
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/values.yaml --version v1.14.5
 ```
 
 ### Traefik
@@ -54,6 +54,9 @@ k apply -f secrets/cf-token.secret.yaml
 k apply -f secrets/certificate-issuers/letsencrypt-staging.insecure.yaml
 k apply -f apps/security/cert-manager/certificates/staging/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/staging/traefik-default-tls.yaml
+
+# Check certificate status
+kubectl describe certificaterequest umhomelab-com-1 -n default
 ```
 
 Wait for propagation: find the right pod by checking logs and wait till it says propagated.
@@ -73,6 +76,9 @@ k delete secret umhomelab-com-staging
 k apply -f secrets/certificate-issuers/letsencrypt-production.insecure.yaml
 k apply -f apps/security/cert-manager/certificates/production/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/production/traefik-default-tls.yaml
+
+# Check certificate status
+kubectl describe certificaterequest umhomelab-com-1 -n default
 ```
 
 ### Postgres
@@ -103,7 +109,7 @@ k apply -f apps/security/authentik/ingress.yaml
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.0.0-alpha3
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.3.0
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
