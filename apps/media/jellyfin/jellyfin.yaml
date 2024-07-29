@@ -34,6 +34,9 @@ spec:
         runAsGroup: 1000
         # runAsNonRoot: true
         runAsUser: 1000
+        # "render" group for transcoging
+        supplementalGroups:
+          - 105
         fsGroupChangePolicy: "OnRootMismatch"
       nodeName: node1
       volumes:
@@ -45,7 +48,7 @@ spec:
           claimName: jellyfin-config-nfs
       - name: video
         hostPath:
-          path: /dev/vdi
+          path: /dev/dri
       containers:
       - env:
         - name: JELLYFIN_PublishedServerUrl 
@@ -92,7 +95,10 @@ spec:
           - mountPath: /config
             name: jellyfin-config
             subPath: "config/"
-          - mountPath: /dev/vdi
+          - mountPath: /cache
+            name: jellyfin-config
+            subPath: "cache/"
+          - mountPath: /dev/dri
             name: video
       dnsPolicy: ClusterFirst
       restartPolicy: Always

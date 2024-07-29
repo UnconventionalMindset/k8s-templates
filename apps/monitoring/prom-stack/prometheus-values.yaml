@@ -1,0 +1,113 @@
+fullnameOverride: prom-stack
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs: |
+      - job_name: jellyfin
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+            - jellyfin-tcp.jellyfin:8096
+    replicas: 1
+    securityContext:
+      runAsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+    storageSpec:
+      volumeClaimTemplate:
+        metadata:
+          name: prometheus-app-nfs
+        spec:
+          storageClassName: ""
+          volumeName: prometheus-app-nfs
+          accessModes:
+            - ReadWriteMany
+          resources:
+            requests:
+              storage: 50Gi
+          selector:
+            matchLabels:
+              app: prometheus
+
+alertmanager:
+  fullnameOverride: alertmanager
+  enabled: true
+  ingress:
+    enabled: false
+
+grafana:
+  enabled: true
+  fullnameOverride: grafana
+  forceDeployDatasources: false
+  forceDeployDashboards: false
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: utc
+  serviceMonitor:
+    enabled: true
+  
+  initChownData:
+    enabled: false
+  securityContext:
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: nfs
+    accessModes:
+      - ReadWriteMany
+    size: 10Gi
+    existingClaim: grafana-app-nfs
+
+  extraSecretMounts:
+    - name: grafana-secret
+      secretName: grafana-secret
+      mountPath: /etc/secrets/grafana
+      defaultMode: 0440
+      readOnly: true
+  grafana.ini:
+    server:
+      root_url: https://dashboard.umhomelab.com
+    auth:
+      signout_redirect_url: "https://auth.umhomelab.com/application/o/grafana/end-session/"
+      oauth_auto_login: true
+    auth.generic_oauth:
+      name: authentik
+      enabled: true
+      client_id: $__file{/etc/secrets/grafana/client-id}
+      client_secret: $__file{/etc/secrets/grafana/client-secret}
+      scopes: "openid profile email"
+      auth_url: "https://auth.umhomelab.com/application/o/authorize/"
+      token_url: "https://auth.umhomelab.com/application/o/token/"
+      api_url: "https://auth.umhomelab.com/application/o/userinfo/"
+      # Optionally map user groups to Grafana roles
+      role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
+
+kubeControllerManager:
+  enabled: true
+  endpoints:
+    - 192.168.31.190
+
+kubeEtcd:
+  enabled: true
+  endpoints:
+    - 192.168.31.190
+  service:
+    enabled: true
+    port: 2381
+    targetPort: 2381
+
+kubeScheduler:
+  enabled: true
+  endpoints:
+    - 192.168.31.190
+
+kubeProxyr:
+  enabled: true
+  endpoints:
+    - 192.168.31.190

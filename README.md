@@ -100,7 +100,7 @@ k apply -f apps/security/authentik/namespace.yaml
 k apply -f apps/security/authentik/authentik-volume+claim.yaml
 helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
-helm upgrade --install authentik goauthentik/authentik -f secrets/authentik-values.insecure.yaml -n auth --version 2024.4.2
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik-values.yaml -n auth --version 2024.6.1
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
 ```
@@ -184,8 +184,8 @@ k apply -f apps/media/rr/homarr/
 
 ### Bazarr
 ```
-k apply -f apps/media/rr/bazarr/
 k apply -f secrets/bazarr-pg14.secret.yaml
+k apply -f apps/media/rr/bazarr/
 ```
 
 ### Jellyseerr
@@ -221,7 +221,13 @@ k create ns monitoring
 ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm upgrade --install -n monitoring prometheus prometheus-community/kube-prometheus-stack -f apps/monitoring/prometheus.yaml
+
+k apply -f secrets/grafana.secret.yaml
+
+k apply -f apps/monitoring/prom-stack/prometheus-volume.yaml
+k apply -f apps/monitoring/prom-stack/grafana-volume.yaml
+k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
+helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml
 ```
 
 ### Redis
@@ -235,9 +241,12 @@ helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecur
 ### Immich
 ```
 k create ns immich
-k apply -f apps/media/immich/photos-volume.yaml
+
 k apply -f secrets/immich.insecure.yaml
+
+k apply -f apps/media/immich/photos-volume.yaml
 k apply -f apps/media/immich/ingress.yaml
+k apply -f apps/media/immich/immich.yaml
 ```
 
 ### Apache Guacamole
