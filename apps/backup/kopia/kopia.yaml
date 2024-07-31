@@ -41,7 +41,6 @@ spec:
             runAsGroup: 1000
             runAsNonRoot: true
             runAsUser: 1000
-            supplementalGroups: [999]
             privileged: false
           command:
             - kopia
@@ -50,8 +49,6 @@ spec:
             - --disable-csrf-token-checks
             - --insecure
             - --address=0.0.0.0:51515
-            - --server-username=user
-            - --server-password=pass
           ports:
             - containerPort: 51515
               name: web
@@ -77,8 +74,6 @@ spec:
               value: "1000"
             - name: GROUP
               value: "1000"
-            - name: KOPIA_PASSWORD
-              value: kopiapass
 ---
 apiVersion: v1
 kind: Service

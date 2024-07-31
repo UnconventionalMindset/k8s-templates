@@ -5,6 +5,10 @@ metadata:
   namespace: hass
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: hass
@@ -37,7 +41,7 @@ spec:
             claimName: hass-nfs
       containers:
         - name: hass
-          image: docker.io/homeassistant/home-assistant:latest
+          image: docker.io/homeassistant/home-assistant:2024.7.3
           imagePullPolicy: "IfNotPresent"
           securityContext:
             privileged: false
