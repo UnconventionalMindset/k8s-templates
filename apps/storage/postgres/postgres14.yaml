@@ -70,7 +70,7 @@ spec:
             runAsNonRoot: true
             runAsUser: 999
             privileged: false
-          image: postgres:latest
+          image: postgres:16-bookworm
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
