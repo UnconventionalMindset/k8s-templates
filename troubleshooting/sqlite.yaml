@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlite
+  namespace: rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqlite
+  template:
+    metadata:
+      name: sqlite
+      labels:
+        app: sqlite
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "80"
+      volumes:
+        - name: sql-config-nfs
+          persistentVolumeClaim:
+            claimName: sql-config-nfs
+      containers:
+        - name: sqlite
+          image: keinos/sqlite3:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |-
+              sleep 360m
+          securityContext:
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            privileged: false
+          ports:
+            - containerPort: 7575
+          volumeMounts:
+            - name: sql-config-nfs
+              mountPath: /test/
+              subPath: "data/"
+          env:
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlite-svc
+  namespace: rr
+spec:
+  selector:
+    app: sqlite
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 7575
+  type: LoadBalancer

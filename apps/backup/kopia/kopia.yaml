@@ -49,6 +49,7 @@ spec:
             - --disable-csrf-token-checks
             - --insecure
             - --address=0.0.0.0:51515
+            - --without-password
           ports:
             - containerPort: 51515
               name: web
@@ -74,6 +75,11 @@ spec:
               value: "1000"
             - name: GROUP
               value: "1000"
+            - name: KOPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kopia-secret
+                  key: kopia-password
 ---
 apiVersion: v1
 kind: Service
@@ -103,6 +109,9 @@ spec:
   routes:
     - match: Host(`backup.umhomelab.com`) || Host(`www.backup.umhomelab.com`)
       kind: Rule
+      middlewares:
+        - name: authentik
+          namespace: auth
       services:
         - name: kopia-svc
           namespace: backup

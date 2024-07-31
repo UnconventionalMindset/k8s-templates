@@ -48,7 +48,10 @@ spec:
             - name: POSTGRES_ENABLED
               value: "true"
             - name: POSTGRES_DATABASE
-              value: bazarr
+              valueFrom:
+                secretKeyRef:
+                  name: bazarr-pg14-secret
+                  key: postgres-bazarr-db
             - name: POSTGRES_HOST
               value: 192.168.31.222
             - name: POSTGRES_USERNAME

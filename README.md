@@ -179,6 +179,7 @@ k apply -f apps/interfaces/homepage/
 
 ### Homarr
 ```
+k apply -f secrets/homarr.secret.yaml
 k apply -f apps/media/rr/homarr/
 ```
 
@@ -273,5 +274,6 @@ k apply -f apps/backup/kopia/apps-volume.yaml
 k apply -f apps/backup/kopia/data-volume.yaml
 k apply -f apps/backup/kopia/files-volume.yaml
 
+k apply -f secrets/kopia.secret.yaml
 k apply -f apps/backup/kopia/kopia.yaml
 ```

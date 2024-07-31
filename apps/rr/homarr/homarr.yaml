@@ -50,6 +50,50 @@ spec:
             - name: homarr-config-nfs
               mountPath: /app/public/icons
               subPath: "icons/"
+          env:
+            - name: AUTH_PROVIDER
+              value: oidc
+            - name: BASE_URL
+              value: umhomelab.com
+            - name: AUTH_OIDC_URI
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: oidc-uri
+            - name: AUTH_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: oidc-client-id
+            - name: AUTH_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: oidc-client-secret
+            - name: AUTH_OIDC_CLIENT_NAME
+              value: "Authentik"
+            - name: NEXTAUTH_URL
+              value: https://umhomelab.com
+            - name: DEFAULT_COLOR_SCHEME
+              value: dark
+            - name: AUTH_LOGOUT_REDIRECT_URL
+              value: https://umhomelab.com
+            - name: AUTH_SESSION_EXPIRY_TIME
+              value: "30d"
+            - name: AUTH_OIDC_TIMEOUT
+              value: "3500"
+            - name: AUTH_OIDC_ADMIN_GROUP
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: oidc-admin-group
+            - name: AUTH_OIDC_OWNER_GROUP
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: oidc-owner-group
+            - name: AUTH_OIDC_AUTO_LOGIN
+              value: "true"
 ---
 apiVersion: v1
 kind: Service
