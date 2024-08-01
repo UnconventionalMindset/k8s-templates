@@ -26,12 +26,12 @@ spec:
             claimName: rr-media-nfs
       containers:
         - name: jellyseerr
-          image: ghcr.io/hotio/jellyseerr
+          image: docker.io/fallenbagel/jellyseerr:1.9.2
           ports:
             - containerPort: 5055
           volumeMounts:
             - name: jellyseerr-config-nfs
-              mountPath: /config
+              mountPath: /app/config
               subPath: "config/"
           env:
             - name: PUID
