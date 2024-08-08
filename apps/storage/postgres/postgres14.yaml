@@ -70,7 +70,7 @@ spec:
             runAsNonRoot: true
             runAsUser: 999
             privileged: false
-          image: postgres:16.3
+          image: postgres:16.4
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
