@@ -99,7 +99,7 @@ k apply -f apps/security/authentik/namespace.yaml
 k apply -f apps/security/authentik/authentik-volume+claim.yaml
 helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.6.1
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.6.3
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
 ```
@@ -235,7 +235,7 @@ helm upgrade --install -n monitoring prom-stack prometheus-community/kube-promet
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 19.6.4
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.0
 ```
 
 ### Immich
