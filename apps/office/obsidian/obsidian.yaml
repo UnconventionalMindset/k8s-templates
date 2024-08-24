@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obsidian
+  namespace: office
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: obsidian
+  template:
+    metadata:
+      name: obsidian
+      labels:
+        app: obsidian
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      #   runAsGroup: 1000
+      #   runAsNonRoot: true
+      #   runAsUser: 1000
+      volumes:
+        - name: obsidian-app-config
+          persistentVolumeClaim:
+            claimName: obsidian-app-nfs
+      containers:
+        - name: obsidian
+          image: lscr.io/linuxserver/obsidian:1.6.7
+          # securityContext:
+          #   runAsGroup: 1000
+          #   runAsNonRoot: true
+          #   runAsUser: 1000
+          #   privileged: false
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+            - containerPort: 3001
+              name: https
+              protocol: TCP
+          volumeMounts:
+            - name: obsidian-app-config
+              mountPath: /config
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Zurich
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: obsidian-svc
+  namespace: office
+spec:
+  selector:
+    app: obsidian
+  ports:
+    - name: websecure
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: obsidian
+  namespace: office
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`obsidian.umhomelab.com`) || Host(`www.obsidian.umhomelab.com`)
+      kind: Rule
+      # middlewares:
+      #   - name: authentik
+      #     namespace: auth
+      services:
+        - name: obsidian-svc
+          namespace: office
+          port: 80
+  tls: {}

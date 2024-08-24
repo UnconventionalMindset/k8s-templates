@@ -1,5 +1,11 @@
 # K8s automations
 
+### Kairos specific
+```
+k apply -k kairos/kustomization.yaml
+k apply -f kairos-cfg.yaml
+```
+
 ### Kube router
 ```
 k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
@@ -8,16 +14,41 @@ k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/
 ### Metal LB
  https://metallb.universe.tf/installation/
 ```
-k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.3/config/manifests/metallb-native.yaml
-k apply -f apps/admin/ipaddress_pools.yaml
+k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+k apply -f apps/admin/metallb/ipaddress_pools.yaml
 ```
+
+## Handling secrets
+
+### GPG key
+```
+export KEY_NAME="name"
+export KEY_COMMENT="comment"
+
+gpg --batch --full-generate-key <<EOF
+%no-protection
+Key-Type: 1
+Key-Length: 4096
+Subkey-Type: 1
+Subkey-Length: 4096
+Expire-Date: 0
+Name-Comment: ${KEY_COMMENT}
+Name-Real: ${KEY_NAME}
+EOF
+
+gpg --list-secret-keys "${KEY_NAME}"
+```
+Get the pub part of the output
+
+### Helm secrets - SOPS
+helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 
 ### Cert Manager
 ```
-k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.2/cert-manager.yaml
+k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.15.2
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.15.3
 ```
 
 ### Traefik
@@ -32,8 +63,8 @@ k apply -f apps/network/traefik/ingress.yaml
 k apply -f apps/network/traefik/skip-ssl.yaml
 k apply -f apps/network/traefik/reverse-proxy/nas-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/proxmox-hs-ingress.yaml
-k apply -f apps/network/traefik/reverse-proxy/proxmox-n1-ingress.yaml
-k apply -f apps/network/traefik/reverse-proxy/proxmox-n2-ingress.yaml
+k apply -f apps/network/traefik/reverse-proxy/proxmox-e1-ingress.yaml
+k apply -f apps/network/traefik/reverse-proxy/proxmox-e2-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/zigbee-controller-ingress.yaml
 
 ### Longhorn
@@ -55,7 +86,7 @@ k apply -f apps/security/cert-manager/certificates/staging/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/staging/traefik-default-tls.yaml
 
 # Check certificate status
-kubectl describe certificaterequest umhomelab-com-1 -n default
+kubectl describe certificaterequest umhomelab-com-staging-1 -n default
 ```
 
 Wait for propagation: find the right pod by checking logs and wait till it says propagated.
@@ -72,7 +103,7 @@ If the cert does not appear:
 ### Prod
 ```
 k delete secret umhomelab-com-staging
-k apply -f secrets/certificate-issuers/letsencrypt-production.insecure.yaml
+k apply -f secrets/certificate-issuers/letsencrypt-production.yaml
 k apply -f apps/security/cert-manager/certificates/production/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/production/traefik-default-tls.yaml
 
@@ -88,20 +119,28 @@ k apply -f secrets/pg.secret.yaml
 k apply -f secrets/pgadmin.secret.yaml
 
 k apply -f apps/storage/postgres/configmaps.yaml
-k apply -f apps/storage/postgres/secret.yaml
 k apply -f apps/storage/postgres/postgres.yaml
 k apply -f apps/storage/postgres/postgres14.yaml
 ```
 
+### Redis
+```
+k apply -f apps/storage/redis/volume.yaml
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.0
+```
+
 ### Authentik
 ```
+k apply -f secrets/authentik.secret.yaml
 k apply -f apps/security/authentik/namespace.yaml
 k apply -f apps/security/authentik/authentik-volume+claim.yaml
 helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.6.3
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.6.3
 ```
 
 ### K8s dashboard
@@ -123,11 +162,6 @@ kubectl get secret jac -n dashboard -o jsonpath={".data.token"} | base64 -d
 k apply -f apps/smart/mosquitto/
 ```
 
-### Dev plugin
-```
-k apply -f apps/smart/generic-device-plugin/
-```
-
 ### Zigbee
 ```
 k apply -f apps/smart/zigbee/
@@ -139,16 +173,21 @@ Usual install (do not use now due to issue)
 git clone https://github.com/k8snetworkplumbingwg/multus-cni.git
 cd multus-cni/
 cat ./deployments/multus-daemonset-thick.yml | k apply -f -
-
-cd ~/homelab/k8s-templates/
 k apply -f apps/network/multus/multus-lan.yaml
 ```
 Sometimes multus fails due to: https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221
 Current temporary fix in:
 ```
-k apply -f apps/network/multus/multus-lan.yaml
+cd ~/homelab/k8s-templates/
 k apply -f apps/network/multus/multus-daemonset-thick.yml
+k apply -f apps/network/multus/multus-lan.yaml
 ```
+
+#### K3s multus
+helm repo add rke2-charts https://rke2-charts.rancher.io
+helm repo update
+helm install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml
+
 
 ### Home Assistant
 ```
@@ -167,8 +206,8 @@ k apply -f apps/media/jellyfin/
 
 ### RR
 ```
-k apply -f apps/media/rr/namespace.yaml
-k apply -f apps/media/rr/rr-media-volume+claim.yaml
+k apply -f apps/rr/namespace.yaml
+k apply -f apps/rr/rr-media-volume+claim.yaml
 ```
 
 ### Homepage
@@ -179,33 +218,33 @@ k apply -f apps/interfaces/homepage/
 ### Homarr
 ```
 k apply -f secrets/homarr.secret.yaml
-k apply -f apps/media/rr/homarr/
+k apply -f apps/rr/homarr/
 ```
 
 ### Bazarr
 ```
 k apply -f secrets/bazarr-pg14.secret.yaml
-k apply -f apps/media/rr/bazarr/
+k apply -f apps/rr/bazarr/
 ```
 
 ### Jellyseerr
 ```
-k apply -f apps/media/rr/jellyseerr/
+k apply -f apps/rr/jellyseerr/
 ```
 
 ### Prowlarr
 ```
-k apply -f apps/media/rr/prowlarr/
+k apply -f apps/rr/prowlarr/
 ```
 
 ### Radarr
 ```
-k apply -f apps/media/rr/radarr/
+k apply -f apps/rr/radarr/
 ```
 
 ### Sonarr
 ```
-k apply -f apps/media/rr/sonarr/
+k apply -f apps/rr/sonarr/
 ```
 
 ### Qbittorrent
@@ -227,15 +266,7 @@ k apply -f secrets/grafana.secret.yaml
 k apply -f apps/monitoring/prom-stack/prometheus-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
-helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 61.6.0
-```
-
-### Redis
-```
-k apply -f apps/storage/redis/volume.yaml
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.0
+helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 62.0.0
 ```
 
 ### Immich
@@ -253,6 +284,7 @@ k apply -f apps/media/immich/immich.yaml
 ```
 k create ns guaca
 k apply -f secrets/guaca.secret.yaml
+k apply -f apps/admin/guaca/traefik-subpath-middleware.yaml
 k apply -f apps/admin/guaca/guaca.yaml
 ```
 
@@ -276,3 +308,18 @@ k apply -f apps/backup/kopia/files-volume.yaml
 k apply -f secrets/kopia.secret.yaml
 k apply -f apps/backup/kopia/kopia.yaml
 ```
+
+### Obsidian
+```
+k create ns office
+k apply -f apps/office/obsidian/obsidian-volume.yaml
+k apply -f apps/office/obsidian/obsidian.yaml
+```
+
+<!-- 
+### Appsmith
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm upgrade --install appsmith bitnami/appsmith -n appsmith --create-namespace -f apps/tools/appsmith/appsmith-values.insecure.yaml --version 4.0.0
+``` -->

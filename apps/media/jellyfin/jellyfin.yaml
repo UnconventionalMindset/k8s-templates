@@ -34,11 +34,13 @@ spec:
         runAsGroup: 1000
         # runAsNonRoot: true
         runAsUser: 1000
-        # "render" group for transcoging
         supplementalGroups:
+          # `render` group for transcoding
           - 105
+          # `video` group for transcoding
+          - 39
         fsGroupChangePolicy: "OnRootMismatch"
-      nodeName: node1
+      nodeName: hs
       volumes:
       - name: jellyfin-media
         persistentVolumeClaim:

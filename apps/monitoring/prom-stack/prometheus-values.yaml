@@ -87,6 +87,10 @@ grafana:
       api_url: "https://auth.umhomelab.com/application/o/userinfo/"
       # Optionally map user groups to Grafana roles
       role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
+  sidecar:
+    dashboards:
+      provider:
+        allowUiUpdates: true
 
 kubeControllerManager:
   enabled: true
