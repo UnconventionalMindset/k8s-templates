@@ -218,6 +218,8 @@ spec:
                 secretKeyRef:
                   name: immich-secret
                   key: immich-redis-password
+            - name: IMMICH_LOG_LEVEL
+              value: "verbose"
           ports:
             - name: http
               containerPort: 3001
@@ -235,6 +237,14 @@ spec:
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
+            httpGet:
+              path: /api/server-info/ping
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+          startupProbe:
+            failureThreshold: 30
             httpGet:
               path: /api/server-info/ping
               port: http
