@@ -67,7 +67,6 @@ spec:
         app.kubernetes.io/name: machine-learning
         app.kubernetes.io/instance: immich
     spec:
-      
       serviceAccountName: default
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
@@ -230,7 +229,7 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /api/server-info/ping
+              path: /api/server/ping
               port: http
             initialDelaySeconds: 0
             periodSeconds: 10
@@ -238,7 +237,7 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /api/server-info/ping
+              path: /api/server/ping
               port: http
             initialDelaySeconds: 0
             periodSeconds: 10
@@ -246,7 +245,7 @@ spec:
           startupProbe:
             failureThreshold: 30
             httpGet:
-              path: /api/server-info/ping
+              path: /api/server/ping
               port: http
             initialDelaySeconds: 0
             periodSeconds: 10
