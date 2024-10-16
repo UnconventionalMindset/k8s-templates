@@ -140,7 +140,7 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.8.1
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.8.3
 ```
 
 ### K8s dashboard
