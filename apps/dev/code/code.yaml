@@ -42,6 +42,8 @@ spec:
               value: Europe/Zurich
             - name: DEFAULT_WORKSPACE
               value: /proj
+            - name: DOCKER_MODS
+              value: linuxserver/mods:code-server-python3
 ---
 apiVersion: v1
 kind: Service
