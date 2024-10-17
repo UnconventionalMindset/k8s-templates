@@ -23,7 +23,7 @@ spec:
             claimName: mosquitto-nfs
       containers:
         - name: mosquitto
-          image: eclipse-mosquitto:2.0.19
+          image: eclipse-mosquitto:2.0.20
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000
