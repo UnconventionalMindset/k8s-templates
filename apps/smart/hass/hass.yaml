@@ -41,7 +41,7 @@ spec:
             claimName: hass-nfs
       containers:
         - name: hass
-          image: docker.io/homeassistant/home-assistant:2024.10.2
+          image: docker.io/homeassistant/home-assistant:2024.10.3
           imagePullPolicy: "IfNotPresent"
           securityContext:
             privileged: false
