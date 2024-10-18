@@ -26,7 +26,7 @@ spec:
             claimName: rr-media-nfs
       containers:
         - name: jellyseerr
-          image: docker.io/fallenbagel/jellyseerr:2.0.0
+          image: docker.io/fallenbagel/jellyseerr:2.0.1
           ports:
             - containerPort: 5055
           volumeMounts:
