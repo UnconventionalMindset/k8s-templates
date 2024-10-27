@@ -128,7 +128,7 @@ k apply -f apps/storage/postgres/postgres14.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.0
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.4
 ```
 
 ### Authentik
@@ -147,7 +147,7 @@ helm upgrade --install authentik goauthentik/authentik -f apps/security/authenti
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.5.0
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.9.0
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
@@ -292,7 +292,7 @@ k apply -f apps/admin/guaca/guaca.yaml
 ```
 helm repo add gissilabs https://gissilabs.github.io/charts/
 helm repo update
-helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.insecure.yaml --version 1.2.1
+helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.insecure.yaml --version 1.2.2
 k apply -f apps/security/vaultwarden/ingress.yaml
 ```
 
