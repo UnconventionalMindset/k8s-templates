@@ -22,7 +22,7 @@ spec:
             claimName: code-config-nfs
       containers:
         - name: code
-          image: lscr.io/linuxserver/code-server:4.93.1
+          image: lscr.io/linuxserver/code-server:4.95.1
           ports:
             - containerPort: 8443
               name: web
