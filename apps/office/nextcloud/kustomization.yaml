@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - ./app-pvc
+  - ./apps-pvc
+  - secrets/nextcloud-admin.secret.yaml
+  - secrets/nextcloud-db.secret.yaml
+  - nextcloud.yaml
+  - service.yaml
+  - ingressroute.yaml

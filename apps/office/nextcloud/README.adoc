@@ -1,0 +1,6 @@
+= Deploy Nextcloud
+
+[source,bash]
+----
+k apply -k ~/homelab/k8s-templates/apps/office/nextcloud
+----

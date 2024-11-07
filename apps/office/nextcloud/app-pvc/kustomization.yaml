@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../../kustomize/volume-claim
+
+patches:
+  - target:
+      kind: PersistentVolume
+      name: base-app-pv-nfs
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: nextcloud-app-pv-nfs
+      - op: replace
+        path: /spec/nfs/path
+        value: /mnt/ssd120/apps/nextcloud
+
+  - target:
+      kind: PersistentVolumeClaim
+      name: base-app-pvc-nfs
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: nextcloud-app-pvc-nfs
+      - op: replace
+        path: /metadata/namespace
+        value: nextcloud
+      - op: replace
+        path: /spec/volumeName
+        value: nextcloud-app-pv-nfs

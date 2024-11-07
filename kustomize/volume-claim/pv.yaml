@@ -1,37 +1,24 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: kopia-files-nfs
+  name: base-app-pv-nfs
 spec:
+  storageClassName: ""
   capacity:
-    storage: 1070Gi
+    storage: 1Ti
   accessModes:
     - ReadWriteMany
-  storageClassName: nfs
+  persistentVolumeReclaimPolicy: Retain
   mountOptions:
     - hard # Retries indefinitely on network interruption
     - noatime # Disables access time updates for improved performance
     - rsize=1048576 # Sets read buffer size to 1MB
     - wsize=1048576 # Sets write buffer size to 1MB
-    - vers=4.2 # Use NFSv4.2 for better locking and performance
+    - vers=4.2 # Use NFSv4.2 or higher for better locking and performance
     - local_lock=all # Enables local caching of locks for performance
     - actimeo=0 # Disables attribute caching to ensure data consistency
     - timeo=600 # Sets NFS timeout to 60 seconds to handle I/O delays
     - async # Asynchronous writes for better throughput
   nfs:
-    server: 192.168.31.99
-    path: "/mnt/vdev14tb/files"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: kopia-files-nfs
-  namespace: backup
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nfs
-  resources:
-    requests:
-      # minimum capacity
-      storage: 100Mi
+    server: "192.168.31.99"
+    path: "/mnt/ssd120/apps/?"
