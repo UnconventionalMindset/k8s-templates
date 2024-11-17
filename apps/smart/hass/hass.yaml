@@ -24,7 +24,7 @@ spec:
               "name" : "lan-network",
               "namespace": "default",
               "mac": "16:3c:13:e1:c9:02",
-              "ips": ["192.168.31.253/24"]
+              "ips": ["192.168.31.233/24"]
             }
           ]'
     spec:
@@ -70,11 +70,86 @@ spec:
   selector:
     app: hass
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 80
-  type: LoadBalancer
-  loadBalancerIP: 192.168.31.233
-  sessionAffinity: ClientIP
+    - name: jupyter-1
+      port: 50321
+      targetPort: 50321
+    - name: jupyter-2
+      port: 50322
+      targetPort: 50322
+    - name: jupyter-3
+      port: 50323
+      targetPort: 50323
+    - name: jupyter-4
+      port: 50324
+      targetPort: 50324
+    - name: jupyter-5
+      port: 50325
+      targetPort: 50325
+    - name: jupyter-6
+      port: 50326
+      targetPort: 50326
+    - name: jupyter-7
+      port: 50327
+      targetPort: 50327
+    - name: jupyter-8
+      port: 50328
+      targetPort: 50328
+    - name: jupyter-9
+      port: 50329
+      targetPort: 50329
+    - name: jupyter-10
+      port: 50330
+      targetPort: 50330
+    - name: jupyter-11
+      port: 50331
+      targetPort: 50331
+    - name: jupyter-12
+      port: 50332
+      targetPort: 50332
+    - name: jupyter-13
+      port: 50333
+      targetPort: 50333
+    - name: jupyter-14
+      port: 50334
+      targetPort: 50334
+    - name: jupyter-15
+      port: 50335
+      targetPort: 50335
+    - name: jupyter-16
+      port: 50336
+      targetPort: 50336
+    - name: jupyter-17
+      port: 50337
+      targetPort: 50337
+    - name: jupyter-18
+      port: 50338
+      targetPort: 50338
+    - name: jupyter-19
+      port: 50339
+      targetPort: 50339
+    - name: jupyter-20
+      port: 50340
+      targetPort: 50340
+    - name: notebook
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - name: shell
+      protocol: TCP
+      port: 5555
+      targetPort: 5555
+    - name: iopub
+      protocol: TCP
+      port: 5556
+      targetPort: 5556
+    - name: stdin
+      protocol: TCP
+      port: 5557
+      targetPort: 5557
+  type: ClusterIP
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute

@@ -20,6 +20,9 @@ spec:
         - name: code-config-nfs
           persistentVolumeClaim:
             claimName: code-config-nfs
+        - name: code-j-config-nfs
+          persistentVolumeClaim:
+            claimName: code-j-config-nfs
       containers:
         - name: code
           image: lscr.io/linuxserver/code-server:4.95.2
@@ -33,6 +36,8 @@ spec:
               subPath: "code/config/"
             - name: code-config-nfs
               mountPath: /proj
+            - name: code-j-config-nfs
+              mountPath: /config/.local/share/jupyter/runtime
           env:
             - name: PUID
               value: "1000"
