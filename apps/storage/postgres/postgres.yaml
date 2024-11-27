@@ -40,7 +40,7 @@ kind: PodDisruptionBudget
 metadata:
   name: postgres-disruption-budget
 spec:
-  maxUnavailable: 1  # Ensures at most one Pod is unavailable at any time
+  maxUnavailable: 1 # Ensures at most one Pod is unavailable at any time
   selector:
     matchLabels:
       app: postgres
@@ -56,8 +56,8 @@ spec:
     rollingUpdate:
       partition: 0 # All pods get updated
   selector:
-   matchLabels:
-    app: postgres
+    matchLabels:
+      app: postgres
   replicas: 1
   template:
     metadata:
@@ -83,13 +83,16 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh -c pg_ctl stop -D /var/lib/postgresql/data -w -m fast"]
+                command:
+                  [
+                    "/bin/sh -c pg_ctl stop -D /var/lib/postgresql/data -w -m fast",
+                  ]
           securityContext:
             runAsGroup: 999
             runAsNonRoot: true
             runAsUser: 999
             privileged: false
-          image: tensorchord/pgvecto-rs:pg16-v0.2.0
+          image: tensorchord/pgvecto-rs:pg16-v0.4.0
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
@@ -122,13 +125,13 @@ metadata:
   labels:
     app: postgres
 spec:
-    ports:
+  ports:
     - name: postgres
       port: 5432
       nodePort: 30432
-    type: NodePort
-    selector:
-      app: postgres
+  type: NodePort
+  selector:
+    app: postgres
 ---
 apiVersion: v1
 kind: Service
