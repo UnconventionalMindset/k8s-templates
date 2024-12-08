@@ -92,7 +92,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 999
             privileged: false
-          image: tensorchord/pgvecto-rs:pg16-v0.4.0
+          # Check for immich support before upgrading
+          image: tensorchord/pgvecto-rs:pg16-v0.3.0
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data

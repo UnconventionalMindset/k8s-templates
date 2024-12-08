@@ -48,7 +48,7 @@ helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.15.3
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.16.2
 ```
 
 ### Traefik
@@ -128,7 +128,7 @@ k apply -f apps/storage/postgres/postgres14.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.0.4
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.4.0
 ```
 
 ### Authentik
@@ -140,14 +140,14 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.8.3
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.10.4
 ```
 
 ### K8s dashboard
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.9.0
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.10.0
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
@@ -186,8 +186,7 @@ k apply -f apps/network/multus/multus-lan.yaml
 #### K3s multus
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml
-
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.1.301
 
 ### Home Assistant
 ```
@@ -266,7 +265,7 @@ k apply -f secrets/grafana.secret.yaml
 k apply -f apps/monitoring/prom-stack/prometheus-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
-helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 62.0.0
+helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 66.3.1
 ```
 
 ### Immich
@@ -292,7 +291,7 @@ k apply -f apps/admin/guaca/guaca.yaml
 ```
 helm repo add gissilabs https://gissilabs.github.io/charts/
 helm repo update
-helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.insecure.yaml --version 1.2.2
+helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.insecure.yaml --version 1.2.4
 k apply -f apps/security/vaultwarden/ingress.yaml
 ```
 
@@ -316,7 +315,7 @@ k apply -f apps/office/obsidian/obsidian-volume.yaml
 k apply -f apps/office/obsidian/obsidian.yaml
 ```
 
-<!-- 
+<!--
 ### Appsmith
 ```
 helm repo add bitnami https://charts.bitnami.com/bitnami

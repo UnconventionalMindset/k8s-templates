@@ -1,5 +1,6 @@
 # I always get errors on provisioning, so better to create CRDs manually
-crds.enabled: false
+crds:
+  enabled: false
 replicaCount: 2
 extraArgs:
   - --dns01-recursive-nameservers=1.1.1.1:53,9.9.9.9:53
