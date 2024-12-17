@@ -4,11 +4,10 @@ kind: Kustomization
 
 # list of Resource Config to be Applied
 resources:
-  - https://raw.githubusercontent.com/longhorn/longhorn/v1.6.2/deploy/longhorn.yaml
+  - https://raw.githubusercontent.com/longhorn/longhorn/v1.7.2/deploy/longhorn.yaml
   - ingress.yaml
 
 # namespace to deploy all Resources to
 namespace: longhorn-system
-
 # patchesStrategicMerge:
 #   - config.yaml
