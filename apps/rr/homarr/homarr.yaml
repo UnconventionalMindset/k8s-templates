@@ -29,7 +29,7 @@ spec:
             claimName: homarr-config-nfs
       containers:
         - name: homarr
-          image: ghcr.io/ajnart/homarr:0.15.9
+          image: ghcr.io/ajnart/homarr:0.15.10
           securityContext:
             runAsGroup: 1000
             runAsNonRoot: true
