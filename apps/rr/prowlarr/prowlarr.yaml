@@ -25,7 +25,7 @@ spec:
             claimName: rr-media-nfs
       containers:
         - name: prowlarr
-          image: lscr.io/linuxserver/prowlarr:1.27.0
+          image: lscr.io/linuxserver/prowlarr:1.28.2
           ports:
             - containerPort: 9696
           volumeMounts:
