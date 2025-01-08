@@ -128,7 +128,7 @@ k apply -f apps/storage/postgres/postgres14.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.4.0
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 20.6.1
 ```
 
 ### Authentik
@@ -140,7 +140,7 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.10.4
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.12.1
 ```
 
 ### K8s dashboard
@@ -265,7 +265,7 @@ k apply -f secrets/grafana.secret.yaml
 k apply -f apps/monitoring/prom-stack/prometheus-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
-helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 66.3.1
+helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 67.8.0
 ```
 
 ### Immich
