@@ -60,6 +60,8 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Zurich"
+            - name: PYTHONPATH
+              value: "$PYTHONPATH:/config/deps"
 ---
 apiVersion: v1
 kind: Service
