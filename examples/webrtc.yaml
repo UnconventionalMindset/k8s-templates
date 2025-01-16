@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usb-webcam-streamer
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: usb-webcam-streamer
+  template:
+    metadata:
+      labels:
+        app: usb-webcam-streamer
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: hs
+      containers:
+        - name: webrtc-streamer
+          image: mpromonet/webrtc-streamer:latest
+          args: ["/dev/video0", "-o"] # Use the webcam at /dev/video0
+          ports:
+            - containerPort: 8000
+              name: http
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: webcam0
+              mountPath: /dev/video0
+              readOnly: true
+          resources:
+            limits:
+              squat.ai/video0: 1
+      volumes:
+        - name: webcam0
+          hostPath:
+            path: /dev/video0
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: usb-webcam-streamer
+  namespace: kube-system
+spec:
+  # type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 192.168.31.246 # < IP to access your jellyfinserver. Should be one from the MetalLB range and the same as the UDP yaml
+  sessionAffinity: ClientIP
+  selector:
+    app: usb-webcam-streamer
+  ports:
+    - port: 80
+      targetPort: 8000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: usb-webcam-streamer
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "Host(`ciao.umhomelab.com`) || Host(`www.ciao.umhomelab.com`)"
+      kind: Rule
+      services:
+        - name: usb-webcam-streamer
+          namespace: kube-system
+          port: 80
+  tls: {}

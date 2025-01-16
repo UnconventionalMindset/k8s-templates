@@ -315,6 +315,13 @@ k apply -f apps/office/obsidian/obsidian-volume.yaml
 k apply -f apps/office/obsidian/obsidian.yaml
 ```
 
+### Scrypted
+```
+helm repo add bryopsida https://bryopsida.github.io/helm
+helm repo update
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 27.0.2
+```
+
 <!--
 ### Appsmith
 ```

@@ -15,7 +15,7 @@ spec:
     - wsize=8192
   nfs:
     server: 192.168.31.99
-    path: "/mnt/vdev14tb/data/photos"
+    path: "/mnt/vdev14tb/data/pics"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

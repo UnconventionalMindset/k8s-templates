@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scrypted
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scrypted
+  template:
+    metadata:
+      labels:
+        app: scrypted
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: hs
+      containers:
+        - name: scrypted
+          image: ghcr.io/koush/scrypted:latest
+          ports:
+            - containerPort: 11080
+              name: http
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: webcam0
+              mountPath: /dev/video0
+              readOnly: true
+          resources:
+            limits:
+              squat.ai/video0: 1
+      volumes:
+        - name: webcam0
+          hostPath:
+            path: /dev/video0
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scrypted
+  namespace: default
+spec:
+  # type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 192.168.31.246 # < IP to access your jellyfinserver. Should be one from the MetalLB range and the same as the UDP yaml
+  sessionAffinity: ClientIP
+  selector:
+    app: scrypted
+  ports:
+    - port: 11080
+      targetPort: 11080
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: scrypted
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "Host(`ciao.umhomelab.com`) || Host(`www.ciao.umhomelab.com`)"
+      kind: Rule
+      services:
+        - name: scrypted
+          namespace: default
+          port: 80
+  tls: {}
