@@ -140,7 +140,7 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.12.1
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2024.12.2
 ```
 
 ### K8s dashboard
@@ -222,7 +222,7 @@ k apply -f apps/rr/homarr/
 
 ### Bazarr
 ```
-k apply -f secrets/bazarr-pg14.secret.yaml
+k apply -f secrets/bazarr-pg.secret.yaml
 k apply -f apps/rr/bazarr/
 ```
 

@@ -50,19 +50,19 @@ spec:
             - name: POSTGRES_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: bazarr-pg14-secret
+                  name: bazarr-pg-secret
                   key: postgres-bazarr-db
             - name: POSTGRES_HOST
-              value: 192.168.31.222
+              value: 192.168.31.229
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: bazarr-pg14-secret
+                  name: bazarr-pg-secret
                   key: postgres-bazarr-user
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: bazarr-pg14-secret
+                  name: bazarr-pg-secret
                   key: postgres-bazarr-pass
 ---
 apiVersion: v1
