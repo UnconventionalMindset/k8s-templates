@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immich-env
+  namespace: immich # Change this if you're using a different namespace
+data:
+  IMMICH_LOG_LEVEL: "verbose"
+  UPLOAD_LOCATION: "/usr/src/app/upload"
+  IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+  IMMICH_PGID: "1000"
+  IMMICH_PUID: "1000"

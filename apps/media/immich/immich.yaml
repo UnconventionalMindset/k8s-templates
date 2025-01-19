@@ -96,12 +96,6 @@ spec:
                 secretKeyRef:
                   name: immich-secret
                   key: immich-db-username
-            - name: IMMICH_MACHINE_LEARNING_URL
-              value: http://immich-machine-learning:3003
-            - name: IMMICH_PGID
-              value: "1000"
-            - name: IMMICH_PUID
-              value: "1000"
             - name: REDIS_HOSTNAME
               valueFrom:
                 secretKeyRef:
@@ -139,8 +133,7 @@ spec:
             timeoutSeconds: 1
       volumes:
         - name: cache
-          emptyDir:
-            {}
+          emptyDir: {}
 ---
 # Source: immich/templates/server.yaml
 apiVersion: apps/v1
@@ -201,12 +194,6 @@ spec:
                 secretKeyRef:
                   name: immich-secret
                   key: immich-db-username
-            - name: IMMICH_MACHINE_LEARNING_URL
-              value: http://immich-machine-learning:3003
-            - name: IMMICH_PGID
-              value: "1000"
-            - name: IMMICH_PUID
-              value: "1000"
             - name: REDIS_HOSTNAME
               valueFrom:
                 secretKeyRef:
@@ -217,15 +204,27 @@ spec:
                 secretKeyRef:
                   name: immich-secret
                   key: immich-redis-password
-            - name: IMMICH_LOG_LEVEL
-              value: "verbose"
+          envFrom:
+            - configMapRef:
+                name: immich-env
+                optional: false
           ports:
             - name: http
               containerPort: 2283
               protocol: TCP
           volumeMounts:
-            - name: library
-              mountPath: /usr/src/app/upload
+            - name: backups
+              mountPath: /usr/src/app/upload/backups
+            - name: thumbs-cache
+              mountPath: /usr/src/app/upload/thumbs
+            - name: encoded-vids
+              mountPath: /usr/src/app/upload/encoded-video
+            - name: lib
+              mountPath: /usr/src/app/upload/library
+            - name: profile
+              mountPath: /usr/src/app/upload/profile
+            - name: uploads
+              mountPath: /usr/src/app/upload/upload
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -251,6 +250,21 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 1
       volumes:
-        - name: library
+        - name: backups
           persistentVolumeClaim:
-            claimName: photos-nfs
+            claimName: backups-immich-nfs
+        - name: thumbs-cache
+          persistentVolumeClaim:
+            claimName: thumb-cache-immich-nfs
+        - name: encoded-vids
+          persistentVolumeClaim:
+            claimName: encoded-videos-immich-nfs
+        - name: lib
+          persistentVolumeClaim:
+            claimName: library-immich-nfs
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads-immich-nfs
+        - name: profile
+          persistentVolumeClaim:
+            claimName: profile-immich-nfs
