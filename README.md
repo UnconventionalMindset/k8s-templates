@@ -55,7 +55,7 @@ helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --crea
 ```
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 27.0.2
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 34.2.0
 k apply -f apps/network/traefik/ingress.yaml
 ```
 

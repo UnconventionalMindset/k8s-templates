@@ -1,14 +1,17 @@
 # Install: helm upgrade --install traefik traefik/traefik --values=helm/traefik/traefik-values.yaml
 
+core:
+  defaultRuleSyntax: v3
+
 additionalArguments:
   - "--serversTransport.insecureSkipVerify=true"
 logs:
-# Configure log settings here...
+  # Configure log settings here...
   general:
     level: DEBUG
 
 ports:
-# Configure your entrypoints here...
+  # Configure your entrypoints here...
   web:
     address: ":80"
     # (optional) Permanent Redirect to HTTPS
@@ -19,7 +22,7 @@ ports:
       enabled: true
       # (optional) Set a Default CertResolver
       # certResolver: cloudflare
-  
+
 # Disable Dashboard
 ingressRoute:
   dashboard:
