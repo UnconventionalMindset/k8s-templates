@@ -106,6 +106,7 @@ spec:
       kind: Rule
       middlewares:
         - name: guacamole-subpath
+          namespace: guaca
       services:
         - name: guacamole
           namespace: guaca

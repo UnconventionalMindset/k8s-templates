@@ -33,20 +33,6 @@ ingressClass:
   enabled: true
   isDefaultClass: true
 
-# deployment:
-#   enabled: true
-#   replicas: 3
-#   initContainers:
-#     - name: fix-permissions-acme-json
-#       image: alpine:3.12.4
-#       command:
-#         - chmod
-#         - "600"
-#         - /ssl-certs/acme-staging.json
-#       volumeMounts:
-#         - name: traefik-nfs
-#           mountPath: /ssl-certs
-
 podSecurityContext:
   runAsGroup: 1000
   runAsNonRoot: true
