@@ -5,6 +5,8 @@ core:
 
 additionalArguments:
   - "--serversTransport.insecureSkipVerify=true"
+  - "--entryPoints.web.http.middlewares=default-ratelimit@kubernetescrd"
+  - "--entryPoints.websecure.http.middlewares=default-ratelimit@kubernetescrd"
 logs:
   # Configure log settings here...
   general:

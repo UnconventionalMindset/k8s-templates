@@ -12,7 +12,7 @@ k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/
 ```
 
 ### Metal LB
- https://metallb.universe.tf/installation/
+https://metallb.universe.tf/installation/
 ```
 k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
 k apply -f apps/admin/metallb/ipaddress_pools.yaml
@@ -41,7 +41,9 @@ gpg --list-secret-keys "${KEY_NAME}"
 Get the pub part of the output
 
 ### Helm secrets - SOPS
+```
 helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
+```
 
 ### Cert Manager
 ```
@@ -60,12 +62,16 @@ k apply -f apps/network/traefik/ingress.yaml
 ```
 
 ### Further Traefik
+Move the first middleware in the previous step in case of issues:
+```
+k apply -f apps/network/traefik/security-rate-limiter.yaml
 k apply -f apps/network/traefik/skip-ssl.yaml
 k apply -f apps/network/traefik/reverse-proxy/nas-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/proxmox-hs-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/proxmox-e1-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/proxmox-e2-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/zigbee-controller-ingress.yaml
+```
 
 ### Longhorn
 ```
