@@ -17,13 +17,17 @@ ports:
   web:
     address: ":80"
     # (optional) Permanent Redirect to HTTPS
-    # redirectTo:
-    #   port: websecure
   websecure:
     tls:
       enabled: true
       # (optional) Set a Default CertResolver
       # certResolver: cloudflare
+  ssh:
+    exposedPort: 55522
+    port: 22
+    protocol: TCP
+    expose:
+      default: true
 
 # Disable Dashboard
 ingressRoute:

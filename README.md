@@ -57,7 +57,7 @@ helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --crea
 ```
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 34.2.0
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 34.3.0
 k apply -f apps/network/traefik/ingress.yaml
 ```
 
@@ -153,7 +153,7 @@ helm upgrade --install authentik goauthentik/authentik -f apps/security/authenti
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.10.0
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.10.4
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
