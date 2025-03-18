@@ -23,7 +23,7 @@ spec:
             claimName: rr-media-nfs
       containers:
         - name: radarr
-          image: lscr.io/linuxserver/radarr:5.19.3
+          image: lscr.io/linuxserver/radarr:5.20.2
           ports:
             - containerPort: 7878
           volumeMounts:
