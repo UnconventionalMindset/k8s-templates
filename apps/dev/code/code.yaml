@@ -37,7 +37,7 @@ spec:
             - name: code-config-nfs
               mountPath: /proj
             - name: code-j-config-nfs
-              mountPath: /config/.local/share/jupyter/runtime
+              mountPath: /config/.local/share/jupyter
           env:
             - name: PUID
               value: "1000"
