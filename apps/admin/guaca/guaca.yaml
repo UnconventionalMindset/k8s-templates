@@ -55,7 +55,7 @@ spec:
               containerPort: 8080
               protocol: TCP
         - name: apache-guacd
-          image: docker.io/guacamole/guacd:1.5.5
+          image: docker.io/guacamole/guacd:1.6.0
           imagePullPolicy: IfNotPresent
           env:
             - name: EXTENSIONS
