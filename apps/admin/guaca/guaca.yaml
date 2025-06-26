@@ -25,7 +25,7 @@ spec:
         # fsGroupChangePolicy: "OnRootMismatch"
       containers:
         - name: apache-guacamole
-          image: docker.io/guacamole/guacamole:1.5.5
+          image: docker.io/guacamole/guacamole:1.6.0
           imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRESQL_DATABASE
