@@ -57,7 +57,7 @@ helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --crea
 ```
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 35.2.0
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 36.3.0
 k apply -f apps/network/traefik/ingress.yaml
 ```
 
@@ -134,7 +134,7 @@ k apply -f apps/storage/postgres/postgres14.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 21.0.2
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 21.2.12
 ```
 
 ### Authentik
@@ -146,14 +146,14 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.4.0
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.6.3
 ```
 
 ### K8s dashboard
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.12.0
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.13.0
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
@@ -192,7 +192,7 @@ k apply -f apps/network/multus/multus-lan.yaml
 #### K3s multus
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.1.301
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.2.106
 
 ### Home Assistant
 ```
@@ -271,7 +271,7 @@ k apply -f secrets/grafana.secret.yaml
 k apply -f apps/monitoring/prom-stack/prometheus-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-volume.yaml
 k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
-helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 72.3.0
+helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 75.12.0
 ```
 
 ### Immich
