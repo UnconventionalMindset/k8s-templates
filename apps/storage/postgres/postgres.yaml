@@ -93,7 +93,7 @@ spec:
             runAsUser: 999
             privileged: false
           # Check for immich support before upgrading
-          image: ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvectors0.3.0
+          image: ghcr.io/immich-app/postgres:17-vectorchord0.4.3-pgvectors0.3.0
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
