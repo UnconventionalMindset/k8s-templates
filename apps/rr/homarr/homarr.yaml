@@ -29,27 +29,18 @@ spec:
             claimName: homarr-config-nfs
       containers:
         - name: homarr
-          image: ghcr.io/ajnart/homarr:0.16.0
+          image: ghcr.io/homarr-labs/homarr:v1.32.0
           securityContext:
             runAsGroup: 1000
             runAsNonRoot: true
             runAsUser: 1000
             privileged: false
           ports:
-            - containerPort: 7575
+            - containerPort: 3000
           volumeMounts:
             - name: homarr-config-nfs
-              mountPath: /app/data/configs
+              mountPath: /appdata
               subPath: "config/"
-            - name: homarr-config-nfs
-              mountPath: /data
-              subPath: "data/"
-            - name: homarr-config-nfs
-              mountPath: /app/public/imgs
-              subPath: "imgs/"
-            - name: homarr-config-nfs
-              mountPath: /app/public/icons
-              subPath: "icons/"
           env:
             - name: AUTH_PROVIDER
               value: oidc
@@ -94,6 +85,11 @@ spec:
                   key: oidc-owner-group
             - name: AUTH_OIDC_AUTO_LOGIN
               value: "true"
+            - name: SECRET_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: secret-encryption-key
 ---
 apiVersion: v1
 kind: Service
@@ -107,7 +103,7 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 7575
+      targetPort: 3000
   type: LoadBalancer
 ---
 apiVersion: traefik.io/v1alpha1
