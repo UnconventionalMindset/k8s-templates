@@ -50,14 +50,14 @@ helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.17.2
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.18.2
 ```
 
 ### Traefik
 ```
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 36.3.0
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 37.0.0
 k apply -f apps/network/traefik/ingress.yaml
 ```
 
@@ -134,7 +134,7 @@ k apply -f apps/storage/postgres/postgres14.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 21.2.12
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 22.0.1
 ```
 
 ### Authentik
@@ -146,7 +146,7 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.6.3
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.6.4
 ```
 
 ### K8s dashboard
