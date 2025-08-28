@@ -190,9 +190,11 @@ k apply -f apps/network/multus/multus-lan.yaml
 ```
 
 #### K3s multus
+```
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.2.106
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.2.202
+```
 
 ### Home Assistant
 ```
