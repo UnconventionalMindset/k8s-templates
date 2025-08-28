@@ -26,7 +26,7 @@ spec:
             claimName: obsidian-app-nfs
       containers:
         - name: obsidian
-          image: lscr.io/linuxserver/obsidian:1.9.10
+          image: lscr.io/linuxserver/obsidian:1.9.12
           # securityContext:
           #   runAsGroup: 1000
           #   runAsNonRoot: true
