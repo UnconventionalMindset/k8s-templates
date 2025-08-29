@@ -14,7 +14,7 @@ k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/
 ### Metal LB
 https://metallb.universe.tf/installation/
 ```
-k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
 k apply -f apps/admin/metallb/ipaddress_pools.yaml
 ```
 
