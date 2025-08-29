@@ -1,11 +1,5 @@
 # K8s automations
 
-### Kairos specific
-```
-k apply -k kairos/kustomization.yaml
-k apply -f kairos-cfg.yaml
-```
-
 ### Kube router
 ```
 k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
@@ -64,7 +58,6 @@ k apply -f apps/network/traefik/ingress.yaml
 ### Further Traefik
 Move the first middleware in the previous step in case of issues:
 ```
-k apply -f apps/network/traefik/security-rate-limiter.yaml
 k apply -f apps/network/traefik/skip-ssl.yaml
 k apply -f apps/network/traefik/reverse-proxy/nas-ingress.yaml
 k apply -f apps/network/traefik/reverse-proxy/proxmox-hs-ingress.yaml
@@ -109,7 +102,7 @@ If the cert does not appear:
 ### Prod
 ```
 k delete secret umhomelab-com-staging
-k apply -f secrets/certificate-issuers/letsencrypt-production.yaml
+k apply -f secrets/certificate-issuers/letsencrypt-production.insecure.yaml
 k apply -f apps/security/cert-manager/certificates/production/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/production/traefik-default-tls.yaml
 
