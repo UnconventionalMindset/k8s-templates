@@ -102,6 +102,7 @@ If the cert does not appear:
 ### Prod
 ```
 k delete secret umhomelab-com-staging
+k apply -f secrets/cf-token.secret.yaml
 k apply -f secrets/certificate-issuers/letsencrypt-production.insecure.yaml
 k apply -f apps/security/cert-manager/certificates/production/umhomelab-com.yaml
 k apply -f apps/security/cert-manager/certificates/production/traefik-default-tls.yaml
