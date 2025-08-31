@@ -120,7 +120,6 @@ k apply -f secrets/pgadmin.secret.yaml
 
 k apply -f apps/storage/postgres/configmaps.yaml
 k apply -f apps/storage/postgres/postgres.yaml
-k apply -f apps/storage/postgres/postgres14.yaml
 ```
 
 ### Redis
@@ -276,9 +275,11 @@ k create ns immich
 
 k apply -f secrets/immich.secret.yaml
 
-k apply -f apps/media/immich/photos-volume.yaml
 k apply -f apps/media/immich/ingress.yaml
 k apply -f apps/media/immich/immich.yaml
+k apply -f apps/media/immich/immich-cm.yaml
+
+k apply -f apps/media/immich/volumes/
 ```
 
 ### Apache Guacamole
