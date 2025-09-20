@@ -41,7 +41,6 @@ spec:
               subPath: "incomplete/"
             - name: radarr-config-nfs
               mountPath: /config
-              subPath: "config/"
           env:
             - name: PUID
               value: "1000"

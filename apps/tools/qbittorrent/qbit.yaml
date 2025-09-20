@@ -45,7 +45,6 @@ spec:
               subPath: "downloads/"
             - name: qbit-config-nfs
               mountPath: /config
-              subPath: "config/"
             - name: qbit-config-nfs
               mountPath: /theme
               subPath: "theme/"

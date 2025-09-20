@@ -1,6 +1,6 @@
 nginx:
   enabled: false
-  
+
 cert-manager:
   enabled: false
   installCRDs: false
@@ -8,7 +8,7 @@ cert-manager:
 metrics-server:
   enabled: false
 
-fullnameOverride: 'dashboard'
+fullnameOverride: "dashboard"
 
 # api:
 #   containers:
@@ -21,6 +21,11 @@ app:
       - name: web
         containerPort: 8000
         protocol: TCP
+  ingress:
+    enabled: false
+    hosts:
+      - k.umhomelab.com
+      - k8s.umhomelab.com
 
 kong:
   proxy:
@@ -28,10 +33,3 @@ kong:
     annotations:
       traefik.ingress.kubernetes.io/service.serversscheme: https
       traefik.ingress.kubernetes.io/service.serverstransport: kubedb-skipverify@kubernetescrd
-
-app:
-  ingress:
-    enabled: false
-    hosts:
-      - k.umhomelab.com
-      - k8s.umhomelab.com

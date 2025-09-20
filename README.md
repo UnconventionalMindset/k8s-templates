@@ -140,6 +140,8 @@ helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
 helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.6.4
+
+# To get a long lived token for authentik: kubectl get secret jac -n dashboard -o jsonpath={".data.token"} | base64 -d
 ```
 
 ### K8s dashboard
