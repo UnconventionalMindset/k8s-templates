@@ -132,8 +132,8 @@ helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecur
 
 ### Authentik
 ```
-k apply -f secrets/authentik.secret.yaml
 k apply -f apps/security/authentik/namespace.yaml
+k apply -f secrets/authentik.secret.yaml
 k apply -f apps/security/authentik/authentik-volume+claim.yaml
 helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
