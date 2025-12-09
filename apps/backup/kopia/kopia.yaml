@@ -36,7 +36,7 @@ spec:
             claimName: kopia-files-nfs
       containers:
         - name: kopia
-          image: docker.io/kopia/kopia:0.22.3
+          image: docker.io/kopia/kopia:20251209.0.15319
           securityContext:
             runAsGroup: 1000
             runAsNonRoot: true
