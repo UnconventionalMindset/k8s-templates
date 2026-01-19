@@ -71,7 +71,7 @@ spec:
             runAsGroup: 1000
             runAsUser: 1000
             privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
-          image: docker.io/jellyfin/jellyfin:10.11.5
+          image: docker.io/jellyfin/jellyfin:10.11.6
           imagePullPolicy: "IfNotPresent"
           name: jellyfin
           ports:
