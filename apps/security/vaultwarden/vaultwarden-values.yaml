@@ -1,0 +1,43 @@
+image:
+  repository: ghcr.io/dani-garcia/vaultwarden
+  tag: "1.36.0-alpine"
+
+controller:
+  strategy: RollingUpdate
+
+env:
+  DOMAIN: "https://password.umhomelab.com"
+  SIGNUPS_ALLOWED: "true"
+  EMAIL_ATTEMPTS_LIMIT: "5"
+  EMAIL_EXPIRATION_TIME: "300"
+  PASSWORD_HINTS_ALLOWED: "false"
+  WEBSOCKET_ENABLED: "true"
+  ENABLE_DB_WAL: "false"
+  ROCKET_PORT: "8080"
+  DATABASE_URL:
+    valueFrom:
+      secretKeyRef:
+        name: vaultwarden
+        key: database-url
+  ADMIN_TOKEN:
+    valueFrom:
+      secretKeyRef:
+        name: vaultwarden
+        key: admin-token
+
+service:
+  main:
+    ports:
+      http:
+        port: 80
+        targetPort: 8080
+
+persistence:
+  data:
+    enabled: true
+    type: emptyDir
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534

@@ -1,8 +1,3 @@
-# global:
-#   env:
-#     - name: AUTHENTIK_DEBUG
-#       value: "true"
-
 global:
   volumes:
     - name: credentials
@@ -12,11 +7,32 @@ global:
     - name: credentials
       mountPath: /credentials
       readOnly: true
+  env:
+    - name: AUTHENTIK_DEBUG
+      value: "false"
+    - name: AUTHENTIK_POSTGRESQL__HOST
+      value: "10.43.109.37"
+    - name: AUTHENTIK_POSTGRESQL__NAME
+      value: "authentik"
+    - name: AUTHENTIK_POSTGRESQL__USER
+      value: "authentik"
+    - name: AUTHENTIK_POSTGRESQL__PORT
+      value: "5432"
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-secret
+          key: postgresql-password
+    - name: AUTHENTIK_REDIS__HOST
+      value: "10.43.54.237"
+    - name: AUTHENTIK_REDIS__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-secret
+          key: redis-password
 
 authentik:
   secret_key: file:///credentials/secret-key
-  # This sends anonymous usage-data, stack traces on errors and
-  # performance data to sentry.io, and is fully opt-in
   error_reporting:
     enabled: true
   postgresql:
@@ -29,7 +45,6 @@ authentik:
     host: file:///credentials/redis-host
     password: file:///credentials/redis-password
 
-
 server:
   name: "server"
   startupProbe:
@@ -41,7 +56,7 @@ server:
       persistentVolumeClaim:
         claimName: authentik-media-nfs
   volumeMounts:
-    - mountPath: /media
+    - mountPath: /data/media
       name: authentik-media-nfs
       subPath: "media/"
   ingress:

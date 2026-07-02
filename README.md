@@ -2,13 +2,13 @@
 
 ### Kube router
 ```
-k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
+k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.10.0/daemonset/kubeadm-kuberouter.yaml
 ```
 
 ### Metal LB
 https://metallb.universe.tf/installation/
 ```
-k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
+k apply -f https://raw.githubusercontent.com/metallb/metallb/v0.16.1/config/manifests/metallb-native.yaml
 k apply -f apps/admin/metallb/ipaddress_pools.yaml
 ```
 
@@ -41,17 +41,19 @@ helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 
 ### Cert Manager
 ```
-k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.crds.yaml
+k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.18.2
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.20.3
 ```
 
 ### Traefik
 ```
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 37.0.0
+# Apply Custom Resource Definitions (CRDs) before upgrading
+helm show crds traefik/traefik --version 41.0.1 | kubectl apply --server-side --force-conflicts -f -
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 41.0.1
 k apply -f apps/network/traefik/ingress.yaml
 ```
 
@@ -127,7 +129,7 @@ k apply -f apps/storage/postgres/postgres.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 22.0.1
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 24.1.0
 ```
 
 ### Authentik
@@ -139,7 +141,7 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2025.8.4
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2026.5.3
 
 # To get a long lived token for authentik: kubectl get secret jac -n dashboard -o jsonpath={".data.token"} | base64 -d
 ```
@@ -148,7 +150,7 @@ helm upgrade --install authentik goauthentik/authentik -f apps/security/authenti
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo update
-helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.13.0
+helm upgrade --install dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace dashboard -f apps/interfaces/k8s-dashboard/values.yaml --version 7.14.0
 
 k apply -f secrets/create-service-account.secret.yaml
 k apply -f secrets/create-cluster_role_binding.secret.yaml
@@ -168,27 +170,11 @@ k apply -f apps/smart/mosquitto/
 k apply -f apps/smart/zigbee/
 ```
 
-### Multus
-Usual install (do not use now due to issue)
-```
-git clone https://github.com/k8snetworkplumbingwg/multus-cni.git
-cd multus-cni/
-cat ./deployments/multus-daemonset-thick.yml | k apply -f -
-k apply -f apps/network/multus/multus-lan.yaml
-```
-Sometimes multus fails due to: https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221
-Current temporary fix in:
-```
-cd ~/homelab/k8s-templates/
-k apply -f apps/network/multus/multus-daemonset-thick.yml
-k apply -f apps/network/multus/multus-lan.yaml
-```
-
 #### K3s multus
 ```
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version 4.2.202
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version v4.2.418
 ```
 
 ### Home Assistant
@@ -284,6 +270,13 @@ k apply -f apps/media/immich/immich-cm.yaml
 k apply -f apps/media/immich/volumes/
 ```
 
+### Torrentio
+```
+k apply -f apps/media/torrentio/namespace.yaml
+k apply -f apps/media/torrentio/torrentio.yaml
+k apply -f apps/media/torrentio/ingress.yaml
+```
+
 ### Apache Guacamole
 ```
 k create ns guaca
@@ -294,9 +287,10 @@ k apply -f apps/admin/guaca/guaca.yaml
 
 ### VaultWarden
 ```
-helm repo add gissilabs https://gissilabs.github.io/charts/
+helm repo add gabe565 https://charts.gabe565.com
 helm repo update
-helm upgrade --install -n auth vaultwarden gissilabs/vaultwarden --values secrets/vaultwarden-values.insecure.yaml --version 1.2.5
+k apply -f secrets/vaultwarden.secret.yaml
+helm upgrade --install -n auth vaultwarden gabe565/vaultwarden --values apps/security/vaultwarden/vaultwarden-values.yaml --version 0.16.1
 k apply -f apps/security/vaultwarden/ingress.yaml
 ```
 
