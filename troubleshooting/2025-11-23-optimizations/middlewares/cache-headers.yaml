@@ -1,0 +1,17 @@
+# Cache headers middleware for static assets
+# Sets long cache times for static content
+#
+# To apply:
+#   kubectl apply -f cache-headers.yaml
+#
+# Use for static asset routes (CSS, JS, images)
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: cache-headers
+  namespace: default
+spec:
+  headers:
+    customResponseHeaders:
+      Cache-Control: "public, max-age=31536000, immutable"

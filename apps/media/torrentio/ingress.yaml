@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: torrentio
+  namespace: torrentio
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`torrentio.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: torrentio
+          namespace: torrentio
+          port: 7000
+  tls: {}

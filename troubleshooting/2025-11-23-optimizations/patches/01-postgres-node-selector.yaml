@@ -1,0 +1,12 @@
+# Move PostgreSQL to node hs (has more free memory)
+#
+# To apply:
+#   kubectl patch statefulset postgres -n db --patch-file 01-postgres-node-selector.yaml
+#
+# This will cause the pod to be rescheduled on node hs
+
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: hs

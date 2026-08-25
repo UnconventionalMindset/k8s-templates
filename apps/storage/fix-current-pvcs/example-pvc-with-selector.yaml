@@ -1,0 +1,62 @@
+# Example: How to update your PVC files to use selectors
+
+# BEFORE (can bind to any matching PV):
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hass-nfs
+  namespace: hass
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: 100Mi
+
+# AFTER (only binds to PV with matching labels):
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hass-nfs
+  namespace: hass
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  # ADD THIS SELECTOR:
+  selector:
+    matchLabels:
+      app: hass
+      type: config
+  resources:
+    requests:
+      storage: 100Mi
+
+# The selector must match the labels on your PV:
+# kubectl get pv hass-nfs --show-labels
+# Should show: app=hass,type=config,storage=nfs,managed-by=manual
+
+---
+# Alternative: Use volumeName for explicit binding
+# This is simpler but less flexible
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hass-nfs
+  namespace: hass
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  # Explicitly specify which PV to use:
+  volumeName: hass-nfs
+  resources:
+    requests:
+      storage: 100Mi
+
+# With volumeName, you don't need labels/selectors
+# But selectors are more flexible if you have multiple PVs
+# that could satisfy the claim

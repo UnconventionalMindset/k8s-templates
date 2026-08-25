@@ -1,0 +1,17 @@
+# Add memory limits to Home Assistant
+#
+# To apply:
+#   kubectl patch deployment hass -n hass --patch-file 05-hass-resources.yaml
+
+spec:
+  template:
+    spec:
+      containers:
+      - name: hass
+        resources:
+          requests:
+            memory: "384Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

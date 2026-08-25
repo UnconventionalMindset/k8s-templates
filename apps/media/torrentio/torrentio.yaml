@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: torrentio
+  namespace: torrentio
+  labels:
+    app: torrentio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: torrentio
+  template:
+    metadata:
+      labels:
+        app: torrentio
+    spec:
+      containers:
+        - name: torrentio
+          image: gabisonfire/knightcrawler-addon:latest
+          ports:
+            - containerPort: 7000
+              name: http
+          env:
+            - name: REDIS_HOST
+              value: ":ciao@redis-master.db.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: POSTGRES_HOST
+              value: "postgres.db.svc.cluster.local"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "jac"
+            - name: POSTGRES_PASSWORD
+              value: "JG1@postgres"
+            - name: POSTGRES_DB
+              value: "knightcrawler"
+            - name: NODE_ENV
+              value: "production"
+            # To configure Real Debrid, you can either use the web UI to generate the configuration
+            # or pre-configure it here if the image supports it.
+            # - name: REALDEBRID_API_KEY
+            #   value: "your-api-key"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: torrentio
+  namespace: torrentio
+spec:
+  selector:
+    app: torrentio
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000
+      name: http
+  type: ClusterIP

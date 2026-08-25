@@ -1,0 +1,17 @@
+# Add memory limits to PostgreSQL
+#
+# To apply:
+#   kubectl patch statefulset postgres -n db --patch-file 02-postgres-resources.yaml
+
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"

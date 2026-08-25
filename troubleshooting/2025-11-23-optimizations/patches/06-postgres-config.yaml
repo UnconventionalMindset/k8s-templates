@@ -1,0 +1,25 @@
+# PostgreSQL configuration optimizations
+# Reduces memory usage and connection overhead
+#
+# To apply, create a ConfigMap and mount it, or exec into the pod:
+#   kubectl exec -n db postgres-0 -- psql -U postgres -c "ALTER SYSTEM SET max_connections = 50;"
+#   kubectl exec -n db postgres-0 -- psql -U postgres -c "ALTER SYSTEM SET effective_cache_size = '2GB';"
+#   kubectl delete pod -n db postgres-0  # Restart to apply
+
+# Recommended PostgreSQL settings:
+# max_connections = 50          # Reduced from 100 (use with PgBouncer)
+# effective_cache_size = 2GB    # Reduced from 4GB (more realistic for 8GB node)
+# shared_buffers = 512MB        # Keep as-is (good value)
+# work_mem = 16MB               # Keep as-is (good value)
+
+---
+# Alternative: Create a ConfigMap for postgresql.conf overrides
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-optimized
+  namespace: db
+data:
+  postgresql.override.conf: |
+    max_connections = 50
+    effective_cache_size = 2GB

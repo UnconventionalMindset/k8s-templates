@@ -1,0 +1,48 @@
+---
+# Test PVC to verify Democratic CSI works
+# This will create: /mnt/ssd120/k8s-dynamic/default/test-democratic-csi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-democratic-csi
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: truenas-nfs-csi
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Test pod to mount the PVC
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-democratic-csi-pod
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          echo "Writing test file..."
+          echo "Hello from Democratic CSI!" > /data/test.txt
+          echo "File contents:"
+          cat /data/test.txt
+          echo ""
+          echo "Disk usage:"
+          df -h /data
+          echo ""
+          echo "Test complete! Sleeping..."
+          sleep 3600
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-democratic-csi
+  restartPolicy: Never

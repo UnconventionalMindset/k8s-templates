@@ -1,0 +1,17 @@
+# Add memory limits to Authentik server
+#
+# To apply:
+#   kubectl patch deployment authentik-server -n auth --patch-file 03-authentik-server-resources.yaml
+
+spec:
+  template:
+    spec:
+      containers:
+      - name: server
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "100m"
+          limits:
+            memory: "768Mi"
+            cpu: "500m"

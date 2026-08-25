@@ -1,0 +1,83 @@
+# Optimized Traefik values
+# Changes from original:
+# - Log level: DEBUG -> INFO
+# - Added replicas: 2
+# - Added resource limits
+#
+# To apply:
+#   helm upgrade traefik traefik/traefik -n default --values traefik-values-optimized.yaml
+
+core:
+  defaultRuleSyntax: v3
+
+# Optimization: Scale to 2 replicas for redundancy
+deployment:
+  replicas: 2
+
+additionalArguments:
+  - "--serversTransport.insecureSkipVerify=true"
+  - "--entryPoints.web.http.middlewares=default-ratelimit@kubernetescrd"
+  - "--entryPoints.websecure.http.middlewares=default-ratelimit@kubernetescrd"
+  - "--entryPoints.web.transport.respondingTimeouts.readTimeout=3600s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.readTimeout=3600s"
+  - "--entryPoints.web.transport.respondingTimeouts.writeTimeout=3600s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=3600s"
+
+logs:
+  general:
+    # CHANGED: DEBUG -> INFO (reduces logging overhead)
+    level: INFO
+
+ports:
+  web:
+    address: ":80"
+  websecure:
+    tls:
+      enabled: true
+  ssh:
+    exposedPort: 55522
+    port: 22
+    protocol: TCP
+    expose:
+      default: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+podSecurityContext:
+  runAsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    ingressClass: traefik-external
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: false
+
+rbac:
+  enabled: true
+
+service:
+  enabled: true
+  type: LoadBalancer
+  spec:
+    loadBalancerIP: 192.168.31.100
+
+# Optimization: Add resource limits
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"

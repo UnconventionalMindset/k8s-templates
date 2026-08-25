@@ -1,0 +1,69 @@
+# Optimized Authentik values
+# Changes from original:
+# - Added session expiry settings
+# - Added resource limits
+#
+# To apply:
+#   helm upgrade authentik authentik/authentik -n auth --values authentik-values-optimized.yaml
+
+global:
+  volumes:
+    - name: credentials
+      secret:
+        secretName: authentik-secret
+  volumeMounts:
+    - name: credentials
+      mountPath: /credentials
+      readOnly: true
+
+authentik:
+  secret_key: file:///credentials/secret-key
+  error_reporting:
+    enabled: true
+  postgresql:
+    host: file:///credentials/postgresql-host
+    name: file:///credentials/postgresql-name
+    port: file:///credentials/postgresql-port
+    user: file:///credentials/postgresql-user
+    password: file:///credentials/postgresql-password
+  redis:
+    host: file:///credentials/redis-host
+    password: file:///credentials/redis-password
+
+server:
+  name: "server"
+  startupProbe:
+    initialDelaySeconds: 35
+  readinessProbe:
+    initialDelaySeconds: 15
+  volumes:
+    - name: authentik-media-nfs
+      persistentVolumeClaim:
+        claimName: authentik-media-nfs
+  volumeMounts:
+    - mountPath: /media
+      name: authentik-media-nfs
+      subPath: "media/"
+  ingress:
+    enabled: false
+  # Optimization: Add resource limits
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "100m"
+    limits:
+      memory: "768Mi"
+      cpu: "500m"
+
+worker:
+  # Optimization: Add resource limits
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+redis:
+  enabled: false

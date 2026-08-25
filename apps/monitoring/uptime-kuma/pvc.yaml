@@ -1,0 +1,23 @@
+# Uptime Kuma PVC using Democratic CSI
+# This will automatically create:
+# - ZFS dataset: /mnt/ssd120/k8s-dynamic/uptime-kuma/uptime-kuma-data
+# - NFS share for K8s nodes
+# - PersistentVolume binding
+# No manual PV creation needed!
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uptime-kuma-data
+  namespace: uptime-kuma
+  labels:
+    app: uptime-kuma
+spec:
+  accessModes:
+    - ReadWriteMany
+  # Use Democratic CSI storage class for automatic provisioning
+  storageClassName: truenas-nfs-csi
+  resources:
+    requests:
+      # Uptime Kuma needs minimal storage (mainly SQLite database)
+      storage: 5Gi

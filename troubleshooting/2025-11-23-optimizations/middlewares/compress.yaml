@@ -1,0 +1,23 @@
+# Compression middleware for Traefik
+# Compresses responses to reduce bandwidth and improve load times
+#
+# To apply:
+#   kubectl apply -f compress.yaml
+#
+# Then add to IngressRoutes:
+#   middlewares:
+#   - name: compress
+#     namespace: default
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+  namespace: default
+spec:
+  compress:
+    excludedContentTypes:
+      - image/png
+      - image/jpeg
+      - image/gif
+      - image/webp

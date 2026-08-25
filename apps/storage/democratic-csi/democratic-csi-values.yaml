@@ -1,0 +1,112 @@
+# Secure Democratic CSI Configuration for TrueNAS
+# This provides ZFS dataset automation with security controls
+
+csiDriver:
+  name: "org.democratic-csi.nfs"
+
+driver:
+  config:
+    driver: freenas-api-nfs
+
+    httpConnection:
+      protocol: https
+      host: 192.168.31.99
+      port: 443
+      # API key from sealed secret - set via --set-string
+      apiKey: ""
+      # Require valid SSL (set to true only if using self-signed cert)
+      allowInsecure: true  # Change to false after adding TrueNAS cert to trust store
+
+    zfs:
+      # SECURITY: Only manage datasets under this parent
+      # Create this first: zfs create ssd120/k8s-dynamic
+      datasetParentName: ssd120/k8s-dynamic
+      detachedSnapshotsDatasetParentName: ssd120/k8s-dynamic/.snapshots
+
+      # Enable deduplication and compression
+      datasetProperties:
+        "org.freenas:description": "Managed by Kubernetes CSI - Do Not Modify Manually"
+        "compression": "lz4"
+
+      # Dataset naming pattern
+      datasetNamePattern: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+
+    nfs:
+      shareHost: 192.168.31.99
+      shareAlldirs: false
+      # SECURITY: Only allow your K8s nodes
+      shareAllowedHosts:
+        - 192.168.31.192  # kairos-fed-k3s-e2
+        - 192.168.31.193  # kairos-fed-k3s-hs
+      shareAllowedNetworks: []
+      shareMaprootUser: root
+      shareMaprootGroup: root
+
+# Storage class configuration
+storageClasses:
+  - name: truenas-nfs-csi
+    defaultClass: false
+    # SECURITY: Retain prevents automatic deletion
+    reclaimPolicy: Retain
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+
+    parameters:
+      fsType: nfs
+
+    mountOptions:
+      - nfsvers=4.2
+      - hard
+      - noatime
+      - rsize=8192
+      - wsize=8192
+
+# Volume snapshot support (optional)
+volumeSnapshotClasses:
+  - name: truenas-nfs-snap
+    deletionPolicy: Retain
+    parameters:
+      # Snapshot naming
+      detachedSnapshots: "true"
+
+# Controller (runs on one node, manages API calls)
+controller:
+  enabled: true
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+  # Logging
+  extraEnv:
+    - name: LOG_LEVEL
+      value: "info"
+
+  # Run on control plane if possible
+  nodeSelector: {}
+  tolerations: []
+
+# Node driver (runs on all nodes, handles mounts)
+node:
+  enabled: true
+
+  # Must run on all nodes
+  hostPID: true
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  driver:
+    extraEnv:
+      - name: LOG_LEVEL
+        value: "info"
