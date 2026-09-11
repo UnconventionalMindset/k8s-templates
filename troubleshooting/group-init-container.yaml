@@ -26,7 +26,7 @@ spec:
         fsGroupChangePolicy: "OnRootMismatch"
       initContainers:
         - name: init
-          image: docker.io/ubuntu:noble
+          image: docker.io/ubuntu:resolute
           command: ['/bin/bash', '-c']
           args:
             - |-
@@ -35,7 +35,7 @@ spec:
             runAsUser: 0
       containers:
         - name: init-test
-          image: docker.io/ubuntu:noble
+          image: docker.io/ubuntu:resolute
           command: ["/bin/sh", "-c"]
           args:
             - |-
