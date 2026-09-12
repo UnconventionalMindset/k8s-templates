@@ -80,13 +80,12 @@ kind: IngressRoute
 metadata:
   name: sonarr
   namespace: rr
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
-    - match: Host(`sonarr.umhomelab.com`)
+    - match: Host(`sonarr.umhomelab.com`) || Host(`www.sonarr.umhomelab.com`)
       kind: Rule
       middlewares:
         - name: authentik

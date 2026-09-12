@@ -12,7 +12,7 @@ additionalArguments:
   - "--entryPoints.web.transport.respondingTimeouts.writeTimeout=3600s"
   - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=3600s"
 log:
-  level: DEBUG
+  level: INFO
 
 ports:
   # Configure your entrypoints here...

@@ -11,8 +11,9 @@ spec:
   mountOptions:
     - hard
     - nfsvers=4.2
-    - rsize=8192
-    - wsize=8192
+    - rsize=1048576
+    - wsize=1048576
+    - noatime
   nfs:
     server: 192.168.31.99
     path: "/mnt/ssd120/apps/immich/profile"
@@ -23,6 +24,7 @@ metadata:
   name: profile-immich-nfs
   namespace: immich
 spec:
+  volumeName: profile-immich-nfs
   accessModes:
     - ReadWriteMany
   storageClassName: nfs

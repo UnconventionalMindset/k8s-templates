@@ -61,13 +61,12 @@ kind: IngressRoute
 metadata:
   name: zigbee
   namespace: zigbee
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
-    - match: Host(`zigbee.umhomelab.com`)
+    - match: Host(`zigbee.umhomelab.com`) || Host(`www.zigbee.umhomelab.com`)
       kind: Rule
       middlewares:
         - name: authentik

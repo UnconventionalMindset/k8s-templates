@@ -4,6 +4,7 @@ metadata:
   name: longhorn-ingress
   namespace: longhorn-system
 spec:
+  ingressClassName: traefik
   rules:
     - host: longhorn.umhomelab.com
       http:
@@ -15,4 +16,17 @@ spec:
               name: longhorn-frontend
               port:
                 number: 80
-  # TODO: set tls
+    - host: www.longhorn.umhomelab.com
+      http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: longhorn-frontend
+              port:
+                number: 80
+  tls:
+    - hosts:
+        - longhorn.umhomelab.com
+        - www.longhorn.umhomelab.com

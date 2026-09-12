@@ -2,13 +2,18 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: homepage-nfs
-  namespace: homepage
 spec:
   capacity:
     storage: 1070Gi
   accessModes:
     - ReadWriteMany
   storageClassName: nfs
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+    - rsize=1048576
+    - wsize=1048576
+    - noatime
   nfs:
     server: 192.168.31.99
     path: "/mnt/ssd120/apps/homepage"
@@ -19,6 +24,7 @@ metadata:
   name: homepage-nfs
   namespace: homepage
 spec:
+  volumeName: homepage-nfs
   accessModes:
     - ReadWriteMany
   storageClassName: nfs

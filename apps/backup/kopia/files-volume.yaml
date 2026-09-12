@@ -28,6 +28,7 @@ metadata:
   name: kopia-files-nfs
   namespace: backup
 spec:
+  volumeName: kopia-files-nfs
   accessModes:
     - ReadWriteMany
   storageClassName: nfs

@@ -157,9 +157,8 @@ kind: IngressRoute
 metadata:
   name: hass
   namespace: hass
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
@@ -179,9 +178,8 @@ kind: IngressRoute
 metadata:
   name: hass-insecure
   namespace: hass
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - web
   routes:

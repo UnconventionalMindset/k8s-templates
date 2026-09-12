@@ -71,13 +71,12 @@ kind: IngressRoute
 metadata:
   name: radarr
   namespace: rr
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
-    - match: Host(`radarr.umhomelab.com`)
+    - match: Host(`radarr.umhomelab.com`) || Host(`www.radarr.umhomelab.com`)
       kind: Rule
       middlewares:
         - name: authentik

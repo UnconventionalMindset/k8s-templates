@@ -102,9 +102,8 @@ kind: IngressRoute
 metadata:
   name: kopia
   namespace: backup
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:

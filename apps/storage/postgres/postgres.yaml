@@ -2,7 +2,6 @@ kind: PersistentVolume
 apiVersion: v1
 metadata:
   name: postgres-pv
-  namespace: db
   labels:
     type: local
     app: postgres
@@ -15,8 +14,9 @@ spec:
   mountOptions:
     - hard
     - nfsvers=4.2
-    - rsize=8192
-    - wsize=8192
+    - rsize=1048576
+    - wsize=1048576
+    - noatime
   nfs:
     server: 192.168.31.99
     path: "/mnt/ssd120/apps/postgres"
@@ -27,6 +27,7 @@ metadata:
   name: postgres-pvc
   namespace: db
 spec:
+  volumeName: postgres-pv
   accessModes:
     - ReadWriteMany
   storageClassName: nfs

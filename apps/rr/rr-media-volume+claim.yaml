@@ -11,8 +11,9 @@ spec:
   mountOptions:
     - hard
     - nfsvers=4.2
-    - rsize=8192
-    - wsize=8192
+    - rsize=1048576
+    - wsize=1048576
+    - noatime
   nfs:
     server: 192.168.31.99
     path: "/mnt/vdev14tb/files"
@@ -24,6 +25,7 @@ metadata:
   name: rr-media-nfs
   namespace: rr
 spec:
+  volumeName: rr-media-nfs
   accessModes:
     - ReadWriteMany
   storageClassName: nfs

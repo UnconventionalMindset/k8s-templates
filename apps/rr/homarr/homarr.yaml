@@ -111,9 +111,8 @@ kind: IngressRoute
 metadata:
   name: homarr
   namespace: rr
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:

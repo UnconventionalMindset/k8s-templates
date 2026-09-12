@@ -163,6 +163,7 @@ metadata:
   name: jellyfin
   namespace: jellyfin
 spec:
+  ingressClassName: traefik
   rules:
     - host: jellyfin.umhomelab.com
       http:
@@ -174,3 +175,17 @@ spec:
                 name: jellyfin-tcp
                 port:
                   name: http-tcp
+    - host: www.jellyfin.umhomelab.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin-tcp
+                port:
+                  name: http-tcp
+  tls:
+    - hosts:
+        - jellyfin.umhomelab.com
+        - www.jellyfin.umhomelab.com

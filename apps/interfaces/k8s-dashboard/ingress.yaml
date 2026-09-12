@@ -3,9 +3,8 @@ kind: IngressRoute
 metadata:
   name: dashboard
   namespace: dashboard
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
@@ -25,9 +24,8 @@ kind: IngressRoute
 metadata:
   name: dashboard-login
   namespace: dashboard
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
 spec:
+  ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
