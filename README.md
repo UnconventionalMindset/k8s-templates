@@ -146,6 +146,15 @@ helm upgrade --install authentik goauthentik/authentik -f apps/security/authenti
 # To get a long lived token for authentik: kubectl get secret jac -n dashboard -o jsonpath={".data.token"} | base64 -d
 ```
 
+### Headlamp
+```
+helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo update
+k apply -f apps/interfaces/headlamp/namespace.yaml
+helm upgrade --install headlamp headlamp/headlamp --namespace headlamp -f apps/interfaces/headlamp/values.yaml --version 0.45.0
+k apply -f apps/interfaces/headlamp/ingress.yaml
+```
+
 ### K8s dashboard
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/

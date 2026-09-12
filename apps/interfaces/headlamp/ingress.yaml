@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: headlamp
+  namespace: headlamp
+spec:
+  ingressClassName: traefik-external
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`headlamp.umhomelab.com`) || Host(`www.headlamp.umhomelab.com`) || Host(`k8s.umhomelab.com`) || Host(`www.k8s.umhomelab.com`)
+      kind: Rule
+      services:
+        - name: headlamp
+          namespace: headlamp
+          port: 80
+  tls: {}

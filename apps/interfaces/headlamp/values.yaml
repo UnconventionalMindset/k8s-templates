@@ -1,0 +1,23 @@
+fullnameOverride: "headlamp"
+
+config:
+  inCluster: true
+  inClusterContextName: "main"
+  # Authenticate automatically using Headlamp's service account behind Authentik forward-auth
+  unsafeUseServiceAccountToken: true
+
+clusterRoleBinding:
+  create: true
+  clusterRoleName: cluster-admin
+
+serviceAccount:
+  create: true
+  name: headlamp
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

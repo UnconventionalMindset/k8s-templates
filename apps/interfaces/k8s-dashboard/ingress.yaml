@@ -8,7 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: "Host(`k8s.umhomelab.com`) || Host(`www.k8s.umhomelab.com`)"
+    - match: "Host(`dashboard.umhomelab.com`) || Host(`www.dashboard.umhomelab.com`)"
       kind: Rule
       middlewares:
         - name: authentik-bearer
