@@ -2,7 +2,7 @@
 
 ### Kube router
 ```
-k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.10.0/daemonset/kubeadm-kuberouter.yaml
+k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.11.1/daemonset/kubeadm-kuberouter.yaml
 ```
 
 ### Metal LB
@@ -41,10 +41,10 @@ helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 
 ### Cert Manager
 ```
-k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.3/cert-manager.crds.yaml
+k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.2/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.20.3
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.21.2
 ```
 
 ### Traefik
@@ -52,8 +52,8 @@ helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --crea
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
 # Apply Custom Resource Definitions (CRDs) before upgrading
-helm show crds traefik/traefik --version 41.0.1 | kubectl apply --server-side --force-conflicts -f -
-helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 41.0.1
+helm show crds traefik/traefik --version 41.5.0 | kubectl apply --server-side --force-conflicts -f -
+helm upgrade --install traefik traefik/traefik --values=apps/network/traefik/traefik-values.yaml --version 41.5.0
 k apply -f apps/network/traefik/ingress.yaml
 ```
 
@@ -174,7 +174,7 @@ k apply -f apps/smart/zigbee/
 ```
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version v4.2.418
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version v4.3.101
 ```
 
 ### Home Assistant
