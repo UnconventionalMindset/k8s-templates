@@ -8,7 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`headlamp.umhomelab.com`) || Host(`www.headlamp.umhomelab.com`) || Host(`k8s.umhomelab.com`) || Host(`www.k8s.umhomelab.com`)
+    - match: Host(`headlamp.umhomelab.com`) || Host(`www.headlamp.umhomelab.com`)
       kind: Rule
       services:
         - name: headlamp

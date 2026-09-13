@@ -155,6 +155,15 @@ helm upgrade --install headlamp headlamp/headlamp --namespace headlamp -f apps/i
 k apply -f apps/interfaces/headlamp/ingress.yaml
 ```
 
+### Radar
+```
+helm repo add skyhook https://skyhook-io.github.io/helm-charts
+helm repo update
+k apply -f apps/interfaces/radar/namespace.yaml
+helm upgrade --install radar skyhook/radar --namespace radar -f apps/interfaces/radar/values.yaml --version 1.13.1
+k apply -f apps/interfaces/radar/ingress.yaml
+```
+
 ### K8s dashboard
 ```
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/

@@ -1,0 +1,39 @@
+fullnameOverride: "radar"
+
+replicaCount: 1
+
+serviceAccount:
+  create: true
+  name: radar
+
+rbac:
+  create: true
+  secrets: true
+  viewRBAC: true
+  viewWebhooks: true
+  viewNodeRuntime: true
+  podExec: true
+  podLogs: true
+  portForward: true
+  metrics: true
+  traffic: true
+  crdGroups:
+    all: true
+  additionalRules:
+    - apiGroups: ["*"]
+      resources: ["*"]
+      verbs: ["*"]
+
+mcp:
+  enabled: true
+
+timeline:
+  storage: memory
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
