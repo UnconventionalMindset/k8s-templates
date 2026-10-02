@@ -129,7 +129,7 @@ k apply -f apps/storage/postgres/postgres.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 24.1.0
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 28.3.1
 ```
 
 ### Authentik
@@ -141,7 +141,10 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
-helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2026.5.3
+helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2026.8.3
+
+# If the embedded outpost does not upgrade automatically, force it:
+kubectl set image deployment/ak-outpost-authentik-embedded-outpost -n auth proxy=ghcr.io/goauthentik/proxy:2026.8.3
 
 # To get a long lived token for authentik: kubectl get secret jac -n dashboard -o jsonpath={".data.token"} | base64 -d
 ```
@@ -233,9 +236,9 @@ k apply -f secrets/bazarr-pg.secret.yaml
 k apply -f apps/rr/bazarr/
 ```
 
-### Jellyseerr
+### Seerr
 ```
-k apply -f apps/rr/jellyseerr/
+k apply -f apps/rr/seerr/
 ```
 
 ### Prowlarr
@@ -275,7 +278,7 @@ k apply -f apps/monitoring/prom-stack/grafana-ingress.yaml
 helm upgrade --install -n monitoring prom-stack prometheus-community/kube-prometheus-stack -f apps/monitoring/prom-stack/prometheus-values.yaml --version 75.12.0
 ```
 
-### Immich
+### Immich (v3.2.4)
 ```
 k create ns immich
 

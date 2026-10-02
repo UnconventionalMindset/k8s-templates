@@ -32,6 +32,8 @@ global:
           key: redis-password
 
 authentik:
+  outposts:
+    container_image_base: ghcr.io/goauthentik/%(type)s:%(version)s
   secret_key: file:///credentials/secret-key
   error_reporting:
     enabled: true

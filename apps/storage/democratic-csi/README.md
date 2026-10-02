@@ -125,7 +125,7 @@ You have 3 options:
 ### Option C: Fix Current Setup
 - Don't use Democratic CSI at all
 - Just add labels/selectors to fix binding issues
-- See: `../fix-current-pvcs/README.md`
+- See: `../../../docs/fix-current-pvcs/README.md`
 
 ## Monitoring
 

@@ -1,36 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jellyseerr
+  name: seerr
   namespace: rr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jellyseerr
+      app: seerr
   template:
     metadata:
-      name: jellyseerr
+      name: seerr
       labels:
-        app: jellyseerr
+        app: seerr
     spec:
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
       volumes:
-        - name: jellyseerr-config-nfs
+        - name: seerr-config-nfs
           persistentVolumeClaim:
-            claimName: jellyseerr-config-nfs
+            claimName: seerr-config-nfs
         - name: rr-media-nfs
           persistentVolumeClaim:
             claimName: rr-media-nfs
       containers:
-        - name: jellyseerr
-          image: docker.io/fallenbagel/jellyseerr:2.7.3
+        - name: seerr
+          image: ghcr.io/seerr-team/seerr:v3.5.0
           ports:
             - containerPort: 5055
           volumeMounts:
-            - name: jellyseerr-config-nfs
+            - name: seerr-config-nfs
               mountPath: /app/config
               subPath: "config/"
           env:
@@ -44,13 +44,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jellyseerr-svc
+  name: seerr-svc
   namespace: rr
   annotations:
     metallb.universe.tf/loadBalancerIPs: 192.168.31.243
 spec:
   selector:
-    app: jellyseerr
+    app: seerr
   ports:
     - name: http
       protocol: TCP
@@ -61,17 +61,17 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: jellyseerr
+  name: seerr
   namespace: rr
 spec:
   ingressClassName: traefik-external
   entryPoints:
     - websecure
   routes:
-    - match: Host(`jellyseerr.umhomelab.com`) || Host(`www.jellyseerr.umhomelab.com`)
+    - match: Host(`seerr.umhomelab.com`) || Host(`www.seerr.umhomelab.com`)
       kind: Rule
       services:
-        - name: jellyseerr-svc
+        - name: seerr-svc
           namespace: rr
           port: 80
   tls: {}

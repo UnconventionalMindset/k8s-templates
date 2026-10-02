@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/dani-garcia/vaultwarden
-  tag: "1.37.2-alpine"
+  tag: "1.37.3-alpine"
 
 controller:
   strategy: RollingUpdate

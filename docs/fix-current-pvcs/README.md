@@ -96,7 +96,7 @@ Now jellyfin-cache PVC will ONLY bind to the PV with matching labels!
 
 ```bash
 # This adds labels to existing PVs without disrupting running pods
-cd /home/jac/homelab/k8s-templates/apps/storage/fix-current-pvcs
+cd /home/jac/homelab/k8s-templates/docs/fix-current-pvcs
 ./add-labels.sh
 ```
 

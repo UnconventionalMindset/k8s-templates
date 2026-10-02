@@ -17,7 +17,7 @@ Here's a comparison of all solutions to help you decide.
 ## Detailed Breakdown
 
 ### Option 1: Fix Current Setup (Safest)
-📂 Location: `apps/storage/fix-current-pvcs/`
+📂 Location: `docs/fix-current-pvcs/`
 
 **What it does:**
 - Adds labels to existing PVs
@@ -42,7 +42,7 @@ Here's a comparison of all solutions to help you decide.
 
 **Quick start:**
 ```bash
-cd /home/jac/homelab/k8s-templates/apps/storage/fix-current-pvcs
+cd /home/jac/homelab/k8s-templates/docs/fix-current-pvcs
 ./add-labels.sh
 ```
 
@@ -131,7 +131,7 @@ export TRUENAS_API_KEY='your-key'
 ### Phase 1: Immediate Fix (Option 1)
 ```bash
 # Fix wrong bindings right now (15 minutes)
-cd apps/storage/fix-current-pvcs
+cd docs/fix-current-pvcs
 ./add-labels.sh
 ```
 

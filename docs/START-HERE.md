@@ -34,7 +34,7 @@ apps/monitoring/uptime-kuma/
 
 ### Supporting Documentation
 ```
-apps/storage/
+docs/
 ├── DECISION-GUIDE.md               ← Comparison of all solutions
 └── fix-current-pvcs/               ← Alternative: fix current setup
     ├── README.md
