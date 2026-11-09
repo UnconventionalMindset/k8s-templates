@@ -26,7 +26,7 @@ spec:
             claimName: zigbee-nfs
       containers:
         - name: zigbee
-          image: docker.io/koenkk/zigbee2mqtt:2.7.2
+          image: docker.io/koenkk/zigbee2mqtt:2.14.3
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
@@ -37,6 +37,33 @@ spec:
           env:
             - name: TZ
               value: "Europe/Zurich"
+            # Z2M config overrides (applied over /app/data/configuration.yaml)
+            # Adapter: SLZB-MR3 at 192.168.31.88, CC2674P10 radio (TI) on TCP 7638 -> zstack
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_PORT
+              value: "tcp://192.168.31.88:7638"
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER
+              value: "zstack"
+            - name: ZIGBEE2MQTT_CONFIG_ADVANCED_TRANSMIT_POWER
+              value: "20"
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE
+              value: "115200"
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
+              value: "mqtt://mosquitto-svc.q:1883"
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_USER
+              value: "hass"
+            # MQTT password comes from Secret zigbee-mqtt (created in-cluster, not stored in git):
+            #   kubectl -n zigbee create secret generic zigbee-mqtt --from-literal=password='REAL' --dry-run=client -o yaml | kubectl apply -f -
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zigbee-mqtt
+                  key: password
+            - name: ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED
+              value: "true"
+            - name: ZIGBEE2MQTT_CONFIG_FRONTEND_PORT
+              value: "80"
+            - name: ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED
+              value: "true"
           securityContext:
             privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
 ---

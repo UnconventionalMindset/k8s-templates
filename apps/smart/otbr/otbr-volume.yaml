@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: otbr-nfs
+spec:
+  capacity:
+    storage: 1070Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+    - rsize=1048576
+    - wsize=1048576
+    - noatime
+  nfs:
+    server: 192.168.31.99
+    # The folder must exist on TrueNAS before this is used (see the README)
+    path: "/mnt/ssd120/apps/otbr"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: otbr-nfs
+  namespace: otbr
+spec:
+  volumeName: otbr-nfs
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      # minimum capacity
+      storage: 100Mi

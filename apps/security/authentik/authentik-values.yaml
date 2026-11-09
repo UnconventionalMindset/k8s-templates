@@ -11,7 +11,7 @@ global:
     - name: AUTHENTIK_DEBUG
       value: "false"
     - name: AUTHENTIK_POSTGRESQL__HOST
-      value: "10.43.109.37"
+      value: "postgres.db.svc.cluster.local"
     - name: AUTHENTIK_POSTGRESQL__NAME
       value: "authentik"
     - name: AUTHENTIK_POSTGRESQL__USER
@@ -24,7 +24,7 @@ global:
           name: authentik-secret
           key: postgresql-password
     - name: AUTHENTIK_REDIS__HOST
-      value: "10.43.54.237"
+      value: "redis-master.db.svc.cluster.local"
     - name: AUTHENTIK_REDIS__PASSWORD
       valueFrom:
         secretKeyRef:

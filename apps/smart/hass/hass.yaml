@@ -6,9 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
+    type: Recreate
   selector:
     matchLabels:
       app: hass
@@ -41,7 +39,7 @@ spec:
             claimName: hass-nfs
       containers:
         - name: hass
-          image: docker.io/homeassistant/home-assistant:2026.4.2
+          image: docker.io/homeassistant/home-assistant:2026.11.0
           imagePullPolicy: "IfNotPresent"
           securityContext:
             privileged: false
@@ -162,6 +160,16 @@ spec:
   entryPoints:
     - websecure
   routes:
+    # Android/iOS companion app: its native HTTP/WebSocket client cannot follow
+    # the Authentik forward-auth browser redirect. These endpoints are protected
+    # by Home Assistant's own token auth, so bypass forward-auth for them.
+    - match: "Host(`hass.umhomelab.com`) && (PathPrefix(`/api/`) || PathPrefix(`/auth/token`) || PathPrefix(`/auth/revoke`) || PathPrefix(`/auth/providers`))"
+      kind: Rule
+      priority: 100
+      services:
+        - name: hass
+          namespace: hass
+          port: 80
     - match: "Host(`hass.umhomelab.com`) || Host(`www.hass.umhomelab.com`)"
       kind: Rule
       middlewares:

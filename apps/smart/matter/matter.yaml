@@ -1,0 +1,89 @@
+# Matter controller server for Home Assistant's Matter integration: matterjs-server (matter.js), the same implementation
+# and version the Home Assistant "Matter Server" add-on (9.3.0) bundles. NOT python-matter-server: that is the older,
+# separate implementation and its storage is not interchangeable with this one.
+#
+# Runs on the node's own network because Matter discovery uses IPv6 link-local mDNS. It stays on the same node as the
+# OTBR so the Thread mesh route (interface wpan0) is local to this host. Fabric credentials and the node list live in
+# /data on NFS (subfolder matterjs/): losing them means every Matter device has to be commissioned again.
+# Never run two Matter servers on the same fabric data at the same time (for example this one and the HA add-on).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matter-server
+  namespace: matter
+spec:
+  replicas: 1
+  strategy:
+    # hostNetwork port 5580 and a single owner of the fabric data: never run two at once
+    type: Recreate
+  selector:
+    matchLabels:
+      app: matter-server
+  template:
+    metadata:
+      labels:
+        app: matter-server
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: e2
+      volumes:
+        - name: matter-nfs
+          persistentVolumeClaim:
+            claimName: matter-nfs
+      containers:
+        - name: matter-server
+          image: ghcr.io/matter-js/matterjs-server:1.5.5
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: "Europe/Zurich"
+            - name: STORAGE_PATH
+              value: /data
+            - name: PORT
+              value: "5580"
+            # the node has many interfaces (flannel, cni0, veth*): pin the LAN one
+            - name: PRIMARY_INTERFACE
+              value: ens18
+            # Same fabric identity as the Home Assistant add-on this data came from
+            # (storage dir server-<fabric>-<vendor hex> = server-2-134b). Must not change
+            # once devices are commissioned.
+            - name: VENDOR_ID
+              value: "4939"   # 0x134b
+            - name: FABRIC_ID
+              value: "2"
+            - name: ENABLE_TEST_NET_DCL
+              value: "true"
+          ports:
+            - name: websocket
+              containerPort: 5580
+          volumeMounts:
+            - name: matter-nfs
+              mountPath: /data
+              subPath: "matterjs/"
+          startupProbe:
+            tcpSocket:
+              port: 5580
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 5580
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matter-server
+  namespace: matter
+spec:
+  selector:
+    app: matter-server
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: 5580
+      targetPort: 5580

@@ -1,0 +1,145 @@
+# OpenThread Border Router with the radio on the SLZB-MR3's EFR32MG24 (Thread RCP firmware), reached over the network.
+# Zigbee2MQTT uses the other radio (CC2674P10, port 7638). Do not point both at the same radio.
+#
+# Why the python bridge: the openthread/otbr image has no socat/ser2net, so a network radio cannot be given as a tty.
+# otbr-agent's "spinel+hdlc+forkpty" radio URL runs a helper on a pty and speaks HDLC over its stdin/stdout; the helper
+# below connects that to the radio's TCP serial port.
+#
+# Runs on the node's own network (hostNetwork, privileged) because a border router has to route IPv6 for the Thread
+# mesh and answer mDNS on the LAN. That also means it is pinned to one node (nodeSelector) and uses node ports 8081/8082.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otbr-radio-bridge
+  namespace: otbr
+data:
+  tcp2stdio.py: |
+    #!/usr/bin/env python3
+    """Connect stdin/stdout (the pty from otbr-agent's forkpty radio URL) to a TCP serial endpoint."""
+    import os
+    import select
+    import socket
+    import sys
+    import termios
+    import tty
+
+    host, port = sys.argv[1], int(sys.argv[2])
+    # TCSANOW, not setraw()'s default TCSAFLUSH: otbr-agent sends its first RESET frame as soon as it forks us,
+    # usually before python has started, and a flush would throw that frame away (Init() then fails).
+    try:
+        tty.setraw(0, termios.TCSANOW)
+    except termios.error:
+        pass
+    sock = socket.create_connection((host, port), timeout=10)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+    sock.settimeout(None)
+    while True:
+        ready, _, _ = select.select([0, sock], [], [])
+        if 0 in ready:
+            data = os.read(0, 4096)
+            if not data:
+                break
+            sock.sendall(data)
+        if sock in ready:
+            data = sock.recv(4096)
+            if not data:
+                break
+            os.write(1, data)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otbr
+  namespace: otbr
+spec:
+  replicas: 1
+  strategy:
+    # hostNetwork ports and one radio connection: never run two at once
+    type: Recreate
+  selector:
+    matchLabels:
+      app: otbr
+  template:
+    metadata:
+      labels:
+        app: otbr
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        # OTBR and the Matter server share this node's network, so they must stay on the same node
+        kubernetes.io/hostname: e2
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: otbr-nfs
+          persistentVolumeClaim:
+            claimName: otbr-nfs
+        - name: radio-bridge
+          configMap:
+            name: otbr-radio-bridge
+            defaultMode: 0555
+      containers:
+        - name: otbr
+          image: openthread/otbr@sha256:329299a92dd3554adfa324c2a1e5c5ebf8cbc0e47c53f01f7a6dbe16de7548e2
+          imagePullPolicy: IfNotPresent
+          args:
+            - --radio-url
+            # SLZB-MR3 radio 1 (EFR32MG24) serial-over-TCP: 192.168.31.88:6638
+            - "spinel+hdlc+forkpty:///usr/bin/python3?forkpty-arg=/bridge/tcp2stdio.py&forkpty-arg=192.168.31.88&forkpty-arg=6638"
+            - --backbone-interface
+            - ens18
+          env:
+            - name: TZ
+              value: "Europe/Zurich"
+            # REST API (8081, used by Home Assistant) and web UI (8082) on the node's address
+            - name: HTTP_HOST
+              value: "0.0.0.0"
+            - name: HTTP_PORT
+              value: "8082"
+          securityContext:
+            privileged: true
+          ports:
+            - name: rest
+              containerPort: 8081
+            - name: web
+              containerPort: 8082
+          volumeMounts:
+            # Thread network credentials (active dataset) and agent settings survive restarts here
+            - name: otbr-nfs
+              mountPath: /var/lib/thread
+              subPath: "thread/"
+            - name: radio-bridge
+              mountPath: /bridge
+              readOnly: true
+          readinessProbe:
+            exec:
+              command: ["ot-ctl", "state"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["ot-ctl", "state"]
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otbr
+  namespace: otbr
+spec:
+  selector:
+    app: otbr
+  ports:
+    - name: rest
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+    - name: web
+      protocol: TCP
+      port: 8082
+      targetPort: 8082

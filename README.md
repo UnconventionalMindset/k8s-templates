@@ -1,8 +1,17 @@
 # K8s automations
 
+## Nodes
+
+The three K3s nodes (e1, e2, hs) are Kairos VMs on Proxmox, built from `quay.io/unconventionalmindset/kairos-fedora-transcoding`. `e1` is the first (master, `--cluster-init`) server; `e2` and `hs` join it at `https://192.168.31.191:6443`.
+- Fresh install of the nodes: [docs/kairos-reinstall-guide.md](docs/kairos-reinstall-guide.md)
+- Upgrading existing nodes in steps: [docs/kairos-upgrade-plan.md](docs/kairos-upgrade-plan.md)
+- Image build: the `kairos-transcoding` project (`Dockerfile.byoi`)
+
+Once the nodes are up and `kubectl get nodes` shows all three Ready, continue below.
+
 ### Kube router
 ```
-k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.11.1/daemonset/kubeadm-kuberouter.yaml
+k apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.12.0/daemonset/kubeadm-kuberouter.yaml
 ```
 
 ### Metal LB
@@ -41,10 +50,10 @@ helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.1
 
 ### Cert Manager
 ```
-k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.2/cert-manager.crds.yaml
+k apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.21.2
+helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --values=apps/security/cert-manager/cert-manager-values.yaml --version v1.21.3
 ```
 
 ### Traefik
@@ -129,7 +138,7 @@ k apply -f apps/storage/postgres/postgres.yaml
 k apply -f apps/storage/redis/volume.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 28.3.1
+helm upgrade --install -n db redis bitnami/redis -f secrets/redis-values.insecure.yaml --version 28.3.12
 ```
 
 ### Authentik
@@ -141,6 +150,8 @@ helm repo add goauthentik https://charts.goauthentik.io
 helm repo update
 k apply -f apps/network/traefik/middlewares/
 k apply -f apps/security/authentik/ingress.yaml
+# TLS secret (authentik-outpost-tls) referenced by the embedded outpost ingress; needs cert-manager + the letsencrypt-production ClusterIssuer
+k apply -f apps/security/authentik/authentik-outpost-tls.yaml
 helm upgrade --install authentik goauthentik/authentik -f apps/security/authentik/authentik-values.yaml -n auth --version 2026.8.3
 
 # If the embedded outpost does not upgrade automatically, force it:
@@ -163,7 +174,7 @@ k apply -f apps/interfaces/headlamp/ingress.yaml
 helm repo add skyhook https://skyhook-io.github.io/helm-charts
 helm repo update
 k apply -f apps/interfaces/radar/namespace.yaml
-helm upgrade --install radar skyhook/radar --namespace radar -f apps/interfaces/radar/values.yaml --version 1.13.1
+helm upgrade --install radar skyhook/radar --namespace radar -f apps/interfaces/radar/values.yaml --version 1.19.0
 k apply -f apps/interfaces/radar/ingress.yaml
 ```
 
@@ -191,11 +202,41 @@ k apply -f apps/smart/mosquitto/
 k apply -f apps/smart/zigbee/
 ```
 
+### OpenThread Border Router + Matter server
+
+Radios on the SLZB-MR3 (192.168.31.88): **EFR32MG24 (port 6638, "Thread to remote OTBR" mode) = Thread/Matter**, **CC2674P10 (port 7638) = Zigbee (zigbee2mqtt, do not touch)**. Only one client may use a radio: stop any other OTBR (e.g. the Home Assistant add-on) before starting this one.
+
+Both run with `hostNetwork` (Thread routing, mDNS, Matter multicast) and are pinned to node `e2`, so they share the node's network. State lives on the NAS (`/mnt/ssd120/apps/otbr`, `/mnt/ssd120/apps/matter`, static NFS PVs like the other apps).
+
+```
+# 1. On TrueNAS: create the folders AND one NFS share per folder (hosts 192.168.31.191/.192/.193, mapall core:core), otherwise the pods stay in ContainerCreating with "No such file or directory"
+#    /mnt/ssd120/apps/otbr   /mnt/ssd120/apps/matter
+k apply -f apps/smart/otbr/
+k apply -f apps/smart/matter/
+```
+
+- OTBR: REST API `http://192.168.31.192:8081` (unauthenticated, LAN only), web UI `:8082`. The image has no socat, so a small python bridge (ConfigMap `otbr-radio-bridge`) connects the radio's TCP port to `otbr-agent`. The Thread dataset is persisted in the NFS folder `thread/`.
+- Matter server: [matterjs-server](https://github.com/matter-js/matterjs-server) (the same implementation as the Home Assistant "Matter Server" add-on), WebSocket `ws://192.168.31.192:5580/ws`, dashboard `http://192.168.31.192:5580`. Data in the NFS folder `matterjs/`. `VENDOR_ID`/`FABRIC_ID` (4939 / 2) define the fabric identity and the storage folder `server-2-134b`: never change them once devices are paired.
+- Restart with `k -n otbr rollout restart deploy/otbr` (not `delete pod`: the old pod would still hold the radio when the new one starts).
+- Add to Home Assistant: Settings, Devices & services, add **Open Thread Border Router** with URL `http://192.168.31.192:8081`, add **Matter** (untick "Use the official Matter Server app") with URL `ws://192.168.31.192:5580/ws`. The Thread integration then offers the border router's dataset as preferred network.
+
+#### Migrating Thread + Matter from the Home Assistant add-ons
+Used to move from HA OS add-ons (OpenThread Border Router + Matter Server) to the pods above. Keep the add-ons installed (set to manual boot) for rollback.
+1. Back up the add-ons in HA (or use the backup API) and save the Thread dataset (`otbr/info` websocket command, `active_dataset_tlvs`). The dataset is a secret.
+2. Stop the **Matter Server add-on**, take a cold backup, and copy the add-on's `/data` folder into the NAS folder `matterjs/` (a helper pod mounting the `matter-nfs` PVC). Check the add-on's storage folder name (`server-<fabric>-<vendor hex>`) and set `FABRIC_ID`/`VENDOR_ID` to match, then start the pod. Verify `compressed_fabric_id` and the node count over the WebSocket (`get_nodes`).
+3. Stop the **OpenThread Border Router add-on**, start the `otbr` pod, then import the dataset: `ot-ctl dataset set active <TLV>`, `ot-ctl ifconfig up`, `ot-ctl thread start`. `ot-ctl state` should become `router` and `ot-ctl neighbor table` list the existing Thread devices (no re-pairing needed).
+4. Point the target Home Assistant at the new URLs (above). Disable the Matter/OTBR entries of the old Home Assistant, otherwise it keeps restarting its add-ons and two controllers fight over the same fabric/radio.
+5. Zigbee is not part of this: ZHA/zigbee2mqtt stay on the CC2674P10.
+
 #### K3s multus
 ```
 helm repo add rke2-charts https://rke2-charts.rancher.io
 helm repo update
-helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --kubeconfig /etc/rancher/k3s/k3s.yaml --values apps/network/multus/multus-values.yaml --version v4.3.101
+# 1. CRDs first: a separate chart (the main chart ships none). Installs the NetworkAttachmentDefinition CRD and three whereabouts CRDs
+helm upgrade --install multus-crd rke2-charts/rke2-multus-crd -n kube-system --version 4.3.118
+# 2. Multus. Run from your workstation (it uses ~/.kube/config). Only when running on a node add: --kubeconfig /etc/rancher/k3s/k3s.yaml
+helm upgrade --install multus rke2-charts/rke2-multus -n kube-system --values apps/network/multus/multus-values.yaml --version v4.3.118
+# Then do the manual binary copy in apps/network/multus/README.md ("Required on k3s 1.35"), otherwise new pods cannot start
 ```
 
 ### Home Assistant

@@ -37,3 +37,8 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+# Hostnames Radar answers to, matching apps/interfaces/radar/ingress.yaml.
+allowedHosts:
+  - k8s.umhomelab.com
+  - www.k8s.umhomelab.com

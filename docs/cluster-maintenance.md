@@ -4,7 +4,8 @@ This guide covers maintenance procedures for the Kairos K3s cluster, including g
 
 ## Cluster Overview
 
-- **Nodes**: 2 K3s nodes running on Kairos VMs
+- **Nodes**: 3 K3s nodes running on Kairos VMs
+  - Node `e1` (kairos-fed-k3s-e1): 192.168.31.191, the first (master, cluster-init) server and API endpoint
   - Node `e2` (kairos-fed-k3s-e2): 192.168.31.192
   - Node `hs` (kairos-fed-k3s-hs): 192.168.31.193
 - **Storage**: Longhorn distributed storage
@@ -62,10 +63,10 @@ Shutdown the Kairos VMs via SSH:
 
 ```bash
 # Shutdown e2 node
-ssh -i ~/.ssh/coreos kairos@192.168.31.192 "sudo shutdown -h now"
+ssh -i ~/.ssh/kairos kairos@192.168.31.192 "sudo shutdown -h now"
 
 # Shutdown hs node
-ssh -i ~/.ssh/coreos kairos@192.168.31.193 "sudo shutdown -h now"
+ssh -i ~/.ssh/kairos kairos@192.168.31.193 "sudo shutdown -h now"
 ```
 
 Alternatively, shutdown from Proxmox:
@@ -166,7 +167,7 @@ kubectl cordon <node-name>
 kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data --grace-period=60
 
 # Shutdown the VM
-ssh -i ~/.ssh/coreos kairos@<node-ip> "sudo shutdown -h now"
+ssh -i ~/.ssh/kairos kairos@<node-ip> "sudo shutdown -h now"
 ```
 
 ### Bring Node Back Online
@@ -197,8 +198,8 @@ If you need to shutdown immediately without graceful drain:
 
 ```bash
 # Shutdown VMs directly
-ssh -i ~/.ssh/coreos kairos@192.168.31.192 "sudo shutdown -h now"
-ssh -i ~/.ssh/coreos kairos@192.168.31.193 "sudo shutdown -h now"
+ssh -i ~/.ssh/kairos kairos@192.168.31.192 "sudo shutdown -h now"
+ssh -i ~/.ssh/kairos kairos@192.168.31.193 "sudo shutdown -h now"
 ```
 
 Note: Emergency shutdown may result in:
