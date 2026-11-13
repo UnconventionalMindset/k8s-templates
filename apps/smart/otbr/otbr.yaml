@@ -81,7 +81,7 @@ spec:
             defaultMode: 0555
       containers:
         - name: otbr
-          image: openthread/otbr@sha256:329299a92dd3554adfa324c2a1e5c5ebf8cbc0e47c53f01f7a6dbe16de7548e2
+          image: openthread/otbr@sha256:34be9b611b1ac711206b6f8bacdce80b41b4bbd57cbc54fa9e2f57181d84f832
           imagePullPolicy: IfNotPresent
           args:
             - --radio-url
